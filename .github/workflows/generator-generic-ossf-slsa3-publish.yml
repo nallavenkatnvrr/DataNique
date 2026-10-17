@@ -1,66 +1,91 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
+# Release files with SLSA provenance
+#
+# When you publish a GitHub release, this builds the release files, attaches
+# them to the release and adds a signed SLSA level 3 provenance file
+# (*.intoto.jsonl) that proves they were built here from this repository.
+#
+#   datanique-<tag>-source.zip          the source code at the release tag
+#   datanique-<tag>-frontend-dist.zip   the built frontend (frontend/dist)
+#
+# Check a download with slsa-verifier:
+#   slsa-verifier verify-artifact datanique-v0.3.2-source.zip \
+#     --provenance-path multiple.intoto.jsonl \
+#     --source-uri github.com/nallavenkatnvrr/DataNique --source-tag v0.3.2
+#
+# Started by hand (Actions > Run workflow) it builds the same files and keeps
+# them, with the provenance, as workflow artifacts instead.
+#
+# About SLSA: https://slsa.dev  Generator: https://github.com/slsa-framework/slsa-github-generator
 
-# This workflow lets you generate SLSA provenance file for your project.
-# The generation satisfies level 3 for the provenance requirements - see https://slsa.dev/spec/v0.1/requirements
-# The project is an initiative of the OpenSSF (openssf.org) and is developed at
-# https://github.com/slsa-framework/slsa-github-generator.
-# The provenance file can be verified using https://github.com/slsa-framework/slsa-verifier.
-# For more information about SLSA and how it improves the supply-chain, visit slsa.dev.
+name: Release files with SLSA provenance
 
-name: SLSA generic generator
 on:
-  workflow_dispatch:
   release:
-    types: [created]
+    types: [published]
+  workflow_dispatch:
+
+permissions: read-all
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # attach the files to the release
     outputs:
       digests: ${{ steps.hash.outputs.digests }}
-
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      # ========================================================
-      #
-      # Step 1: Build your artifacts.
-      #
-      # ========================================================
-      - name: Build artifacts
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build the frontend
+        working-directory: frontend
         run: |
-            # These are some amazing artifacts.
-            echo "artifact1" > artifact1
-            echo "artifact2" > artifact2
+          npm ci
+          npm run build
 
-      # ========================================================
-      #
-      # Step 2: Add a step to generate the provenance subjects
-      #         as shown below. Update the sha256 sum arguments
-      #         to include all binaries that you generate
-      #         provenance for.
-      #
-      # ========================================================
-      - name: Generate subject for provenance
-        id: hash
+      - name: Package the release files
         run: |
           set -euo pipefail
+          version="${GITHUB_REF_NAME//\//-}"
+          mkdir out
+          git archive --format=zip --prefix="datanique-${version}/" -o "out/datanique-${version}-source.zip" HEAD
+          (cd frontend/dist && zip -qr "../../out/datanique-${version}-frontend-dist.zip" . -x '*.map')
+          ls -l out
 
-          # List the artifacts the provenance will refer to.
-          files=$(ls artifact*)
-          # Generate the subjects (base64 encoded).
-          echo "hashes=$(sha256sum $files | base64 -w0)" >> "${GITHUB_OUTPUT}"
+      - name: Hash the files for the provenance
+        id: hash
+        working-directory: out
+        run: |
+          set -euo pipefail
+          echo "digests=$(sha256sum -- * | base64 -w0)" >> "$GITHUB_OUTPUT"
+
+      - name: Attach the files to the release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: gh release upload "$TAG" out/* --clobber
+
+      - name: Keep the files (manual run)
+        if: github.event_name != 'release'
+        uses: actions/upload-artifact@v7
+        with:
+          name: datanique-release-files
+          path: out/*
 
   provenance:
     needs: [build]
     permissions:
-      actions: read   # To read the workflow path.
-      id-token: write # To sign the provenance.
-      contents: write # To add assets to a release.
-    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v1.4.0
+      actions: read # read the workflow path
+      id-token: write # sign the provenance
+      contents: write # add the provenance to the release
+    # Reusable workflows from slsa-github-generator must be referenced by tag.
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.1.0
     with:
       base64-subjects: "${{ needs.build.outputs.digests }}"
-      upload-assets: true # Optional: Upload to a new release
+      upload-assets: ${{ github.event_name == 'release' }}

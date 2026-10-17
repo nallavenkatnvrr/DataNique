@@ -1,0 +1,70 @@
+# Tests and build on every push and pull request to main.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v7
+
+      # pyodbc and arrow-odbc need the ODBC driver manager to import.
+      - name: Install unixODBC
+        working-directory: .
+        run: sudo apt-get update -q && sudo apt-get install -y -q --no-install-recommends unixodbc
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-dev.txt
+
+      - name: Install packages
+        run: python -m pip install -r requirements-dev.txt
+
+      # No database needed. The PostgreSQL reader tests are skipped unless
+      # DV_TEST_PG is set.
+      - name: Run tests
+        run: python -m pytest -q
+
+  frontend:
+    name: Frontend checks and build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - run: npm ci
+      - name: Type check
+        run: npx tsc --noEmit -p tsconfig.json
+      - name: Unit tests
+        run: npm test
+      - name: Production build
+        run: npm run build
