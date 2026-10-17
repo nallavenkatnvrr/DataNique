@@ -1,8 +1,11 @@
 # Release with SLSA provenance
 #
-# Push a version tag to release:
+# Two ways to release:
 #
-#   git tag v0.3.4 && git push origin v0.3.4
+#   1. On GitHub: Releases > Draft a new release > choose a tag, type a new
+#      one like v0.3.4 ("Create new tag on publish") > Publish release.
+#      Leave the notes empty to get them from the changelog.
+#   2. From a clone: git tag v0.3.4 && git push origin v0.3.4
 #
 # This builds the release files, creates the GitHub release (notes come from
 # that version's section in CHANGELOG-0.3.md) and adds a signed SLSA level 3
@@ -13,7 +16,6 @@
 #                                (the frontend is already built, no Node.js needed)
 #   datanique-<tag>-source.zip   the source code at the tag
 #
-# Publishing a release by hand on GitHub works too: the files are added to it.
 # Started from the Actions tab, it builds the files and keeps them, with the
 # provenance, as workflow artifacts.
 #
@@ -36,7 +38,28 @@ on:
 permissions: read-all
 
 jobs:
+  # Publishing a release on GitHub also creates its tag, which fires the tag
+  # trigger too. That run has nothing to do: the release run handles it.
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      skip: ${{ steps.chk.outputs.skip }}
+    steps:
+      - id: chk
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT" = "push" ] && gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $GITHUB_REF_NAME already exists; the release workflow run takes care of it."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
   build:
+    needs: [check]
+    if: needs.check.outputs.skip != 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write # create the release and attach the files
@@ -85,7 +108,7 @@ jobs:
           echo "digests=$(sha256sum -- * | base64 -w0)" >> "$GITHUB_OUTPUT"
 
       - name: Release notes from the changelog
-        if: github.event_name == 'push'
+        if: github.event_name != 'workflow_dispatch'
         env:
           TAG: ${{ steps.pkg.outputs.tag }}
         run: |
@@ -117,7 +140,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.pkg.outputs.tag }}
-        run: gh release upload "$TAG" out/* --clobber
+        run: |
+          set -euo pipefail
+          gh release upload "$TAG" out/* --clobber
+          # notes left empty on GitHub: fill them in from the changelog
+          if [ -z "$(gh release view "$TAG" --json body --jq .body)" ]; then
+            gh release edit "$TAG" --notes-file notes.md
+          fi
 
       - name: Keep the files (manual run)
         if: github.event_name == 'workflow_dispatch'
