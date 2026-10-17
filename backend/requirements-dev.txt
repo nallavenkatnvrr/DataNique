@@ -1,0 +1,9 @@
+# Development / test dependencies.
+#   pip install -r requirements-dev.txt
+#
+# The unit test suite (tests/) is pure-logic and needs NO live database,
+# so only pytest is required to run it.
+
+-r requirements.txt
+
+pytest>=8.0.0

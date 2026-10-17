@@ -1,0 +1,27 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Datanique logo">
+  <defs>
+    <linearGradient id="dnqBg" x1="6" y1="4" x2="58" y2="60" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4F46E5"/>
+      <stop offset="0.55" stop-color="#7C3AED"/>
+      <stop offset="1" stop-color="#9333EA"/>
+    </linearGradient>
+    <linearGradient id="dnqCheck" x1="34" y1="34" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#34D399"/>
+      <stop offset="1" stop-color="#10B981"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded badge -->
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#dnqBg)"/>
+
+  <!-- Database cylinder (source/target data) -->
+  <g>
+    <path d="M13 19 V33 A13 4.5 0 0 0 39 33 V19" fill="#FFFFFF" fill-opacity="0.96"/>
+    <ellipse cx="26" cy="19" rx="13" ry="4.5" fill="#FFFFFF"/>
+    <path d="M13 26 A13 4.5 0 0 0 39 26" stroke="#7C3AED" stroke-opacity="0.35" stroke-width="1.6" fill="none"/>
+  </g>
+
+  <!-- Validation check badge -->
+  <circle cx="44" cy="45" r="12.5" fill="url(#dnqCheck)" stroke="url(#dnqBg)" stroke-width="3"/>
+  <path d="M38.5 45.2 l3.8 3.8 L50.5 40" stroke="#FFFFFF" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>

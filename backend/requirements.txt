@@ -1,0 +1,47 @@
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+pydantic==2.9.2
+pydantic-settings==2.5.2
+SQLAlchemy==2.0.35
+cryptography==43.0.1
+python-multipart==0.0.12
+
+# Excel reports
+xlsxwriter==3.2.0
+
+# ----- Compare engine (v2) -----
+# DuckDB is the compare core. The version is pinned because the bundled
+# postgres / mysql scanner extensions (backend/duckdb_extensions/v1.5.6)
+# must match it exactly.
+duckdb==1.5.6
+pyarrow>=17
+# Excel (.xlsx .xlsm .xlsb .xls .ods) reader, Rust
+python-calamine>=0.3
+# Avro reader
+fastavro>=1.9
+
+# ----- Fast database readers (each is optional; the engine falls back) -----
+# ADBC: Arrow-native drivers. PostgreSQL and Snowflake come from PyPI; SQL
+# Server and MySQL drivers come from Columnar's `dbc` tool
+# (`dbc install mssql`, `dbc install mysql`) and are picked up automatically.
+adbc-driver-manager>=1.3
+adbc-driver-postgresql>=1.3
+adbc-driver-snowflake>=1.3
+# Arrow ODBC: Arrow batches straight from the SQL Server ODBC driver (any
+# auth mode ODBC supports, including Windows / Entra ID)
+arrow-odbc>=8
+
+# ----- Vault: "remember on this computer" uses the OS credential store -----
+keyring>=25
+
+# ----- Database drivers -----
+snowflake-connector-python==3.12.2
+# 3.0+ adds Arrow fetch (fetch_df_batches), the fast Oracle path
+oracledb>=3.0
+pyodbc==5.1.0
+psycopg[binary]==3.2.2
+PyMySQL==1.1.1
+
+# ----- Tests -----
+pytest>=8.0
+httpx>=0.27

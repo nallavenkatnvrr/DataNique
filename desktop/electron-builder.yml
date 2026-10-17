@@ -1,0 +1,58 @@
+appId: com.datanique.desktop
+productName: Datanique
+copyright: Copyright © Datanique
+
+directories:
+  output: dist
+  buildResources: build
+
+# Only the Electron shell goes inside the asar app bundle. The built React UI
+# is served by FastAPI from the loopback origin, and the frozen backend must be
+# shipped as a normal executable tree outside asar.
+files:
+  - main.js
+  - preload.js
+  - package.json
+
+# The build script stages both artifacts in desktop/. The renderer is an
+# extraResource so FastAPI can serve it using DV_STATIC_DIR; the PyInstaller
+# backend stays outside asar so main.js can spawn it from process.resourcesPath.
+extraResources:
+  - from: renderer
+    to: renderer
+    filter:
+      - "**/*"
+  - from: resources/backend
+    to: backend
+    filter:
+      - "**/*"
+
+win:
+  target:
+    - nsis
+  # icon: build/icon.ico   # add a 256x256 .ico here for a custom app icon
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+
+# ---------------------------------------------------------------------------
+# Auto-update feed.
+#
+# NOW (local machine): the "generic" provider points at a folder served over
+# HTTP on this machine. Build with `npm run publish` — electron-builder writes
+# the installer + `latest.yml` into ./dist. Serve ./dist over HTTP so the URL
+# below resolves, e.g. from the desktop/dist folder:
+#     npx --yes http-server -p 8080 .
+# Then set DATANIQUE feed url to http://127.0.0.1:8080/.
+#
+# LATER (internet): switch `provider` to `github` (owner/repo) or `s3`
+# (bucket/region) — only this block changes; main.js needs no edits.
+# ---------------------------------------------------------------------------
+publish:
+  - provider: generic
+    url: http://127.0.0.1:8080/
+    channel: latest

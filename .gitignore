@@ -1,0 +1,52 @@
+# =============================================================================
+# Datanique (Data Validator) — git ignore
+# =============================================================================
+
+# ----- Secrets & local config (NEVER commit) -----
+backend/.env
+backend/.secret_key
+backend/.encryption_key
+
+# ----- Local metadata store (connections + run history) -----
+backend/data/
+*.db
+*.sqlite
+*.sqlite3
+
+# ----- Python -----
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ----- Node / frontend -----
+node_modules/
+frontend/dist/
+frontend/.vite/
+*.local
+# tsc output next to the Vite config shadows vite.config.ts — never keep it
+frontend/vite.config.js
+frontend/vite.config.d.ts
+frontend/vite.config.*.timestamp-*.mjs
+frontend/vite.config.js.timestamp-*.mjs
+*.tsbuildinfo
+
+# ----- Editor / OS -----
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ----- Logs / temp -----
+*.log
+*.tmp
+backend/jars/*.jar
+
+# DuckDB extension binaries (see backend/duckdb_extensions/README.md)
+*.duckdb_extension

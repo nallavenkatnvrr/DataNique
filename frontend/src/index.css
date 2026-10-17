@@ -1,0 +1,355 @@
+@import "@fontsource-variable/inter/wght.css";
+@import "@fontsource-variable/jetbrains-mono/wght.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ------------------------------------------------------------------ *
+ * Datanique design tokens.                                            *
+ * Neutral graphite surfaces, one ultramarine accent, and four signal  *
+ * colours used everywhere a comparison result is shown:               *
+ *   --equal (emerald)  --changed (amber)                              *
+ *   --only-src (rose)  --only-tgt (sky)                               *
+ * ------------------------------------------------------------------ */
+@layer base {
+  :root {
+    --background: 220 23% 97%;
+    --foreground: 224 32% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 224 32% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 32% 11%;
+    --primary: 236 83% 58%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 222 20% 93%;
+    --secondary-foreground: 224 32% 14%;
+    --muted: 222 22% 94%;
+    --muted-foreground: 222 12% 44%;
+    --accent: 230 40% 94%;
+    --accent-foreground: 230 50% 22%;
+    --destructive: 352 78% 52%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 156 72% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 34 94% 46%;
+    --warning-foreground: 0 0% 100%;
+    --border: 222 20% 88%;
+    --input: 222 20% 85%;
+    --ring: 236 83% 58%;
+    --radius: 0.7rem;
+
+    --equal: 156 70% 38%;
+    --changed: 34 94% 48%;
+    --only-src: 346 78% 54%;
+    --only-tgt: 204 88% 48%;
+    --surface-2: 222 25% 98.5%;
+    --shadow-color: 224 40% 20%;
+    --glow: 236 90% 62%;
+  }
+
+  .dark {
+    --background: 228 24% 6.5%;
+    --foreground: 220 25% 94%;
+    --card: 228 22% 9.5%;
+    --card-foreground: 220 25% 94%;
+    --popover: 228 22% 11%;
+    --popover-foreground: 220 25% 94%;
+    --primary: 234 90% 68%;
+    --primary-foreground: 230 50% 10%;
+    --secondary: 228 18% 15%;
+    --secondary-foreground: 220 25% 92%;
+    --muted: 228 18% 13%;
+    --muted-foreground: 222 14% 62%;
+    --accent: 232 30% 18%;
+    --accent-foreground: 225 60% 88%;
+    --destructive: 352 82% 62%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 156 62% 48%;
+    --success-foreground: 160 60% 8%;
+    --warning: 38 96% 58%;
+    --warning-foreground: 30 60% 10%;
+    --border: 228 16% 17%;
+    --input: 228 16% 22%;
+    --ring: 234 90% 68%;
+
+    --equal: 156 60% 48%;
+    --changed: 38 95% 58%;
+    --only-src: 346 85% 64%;
+    --only-tgt: 200 92% 60%;
+    --surface-2: 228 22% 8%;
+    --shadow-color: 230 60% 2%;
+    --glow: 234 95% 70%;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  html, body, #root { height: 100%; }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01";
+    font-size: 14px;
+  }
+  .font-mono, code, kbd, pre {
+    font-family: "JetBrains Mono Variable", "Cascadia Code", Consolas, ui-monospace, monospace;
+  }
+  .tabular { font-variant-numeric: tabular-nums; }
+
+  *:focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-1 ring-offset-background;
+  }
+
+  kbd {
+    @apply inline-flex items-center justify-center px-1.5 py-0.5 text-[11px];
+    background: hsl(var(--muted));
+    border: 1px solid hsl(var(--border));
+    border-bottom-width: 2px;
+    border-radius: 5px;
+    line-height: 1;
+  }
+
+  ::selection { background: hsl(var(--primary) / 0.25); }
+}
+
+@layer components {
+  /* Raised surface used by panels and cards */
+  .dv-panel {
+    @apply rounded-xl border bg-card text-card-foreground;
+    box-shadow: 0 1px 2px hsl(var(--shadow-color) / 0.05), 0 8px 24px -12px hsl(var(--shadow-color) / 0.12);
+  }
+  .dv-panel-flat { @apply rounded-xl border bg-card text-card-foreground; }
+  .dv-label { @apply text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground; }
+  .dv-input {
+    @apply h-9 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none transition-colors
+           placeholder:text-muted-foreground/70 focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:opacity-60;
+  }
+  .dv-chip {
+    @apply inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium;
+  }
+  .dv-grid-bg {
+    background-image:
+      linear-gradient(hsl(var(--border) / 0.45) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border) / 0.45) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+  .dv-glow {
+    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.35), 0 10px 40px -10px hsl(var(--glow) / 0.55);
+  }
+  .dv-brand-text {
+    background: linear-gradient(100deg, hsl(var(--primary)), hsl(190 90% 50%));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .dv-nav-active { @apply bg-primary/10 text-primary; }
+}
+
+@layer utilities {
+  .fade-in { animation: fadeIn 0.18s ease-out; }
+  .slide-in-up { animation: slideInUp 0.22s cubic-bezier(.2,.8,.2,1); }
+  .scale-in { animation: scaleIn 0.14s ease-out; }
+  .text-equal { color: hsl(var(--equal)); }
+  .text-changed { color: hsl(var(--changed)); }
+  .text-only-src { color: hsl(var(--only-src)); }
+  .text-only-tgt { color: hsl(var(--only-tgt)); }
+  .bg-equal { background-color: hsl(var(--equal)); }
+  .bg-changed { background-color: hsl(var(--changed)); }
+  .bg-only-src { background-color: hsl(var(--only-src)); }
+  .bg-only-tgt { background-color: hsl(var(--only-tgt)); }
+  .content-auto { content-visibility: auto; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes dv-sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(250%); }
+}
+.dv-indeterminate { position: relative; overflow: hidden; }
+.dv-indeterminate::after {
+  content: ""; position: absolute; inset: 0; width: 40%;
+  background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.55), transparent);
+  animation: dv-sweep 1.2s ease-in-out infinite;
+}
+@keyframes dv-flow {
+  to { stroke-dashoffset: -24; }
+}
+.dv-flow { stroke-dasharray: 6 6; animation: dv-flow 0.8s linear infinite; }
+
+/* Refined scrollbars */
+.scrollbar-thin::-webkit-scrollbar { width: 10px; height: 10px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+  background-clip: content-box;
+}
+.scrollbar-thin::-webkit-scrollbar-corner { background: transparent; }
+
+.collapse-transition {
+  overflow: hidden;
+  transition: max-height 200ms ease, opacity 150ms ease;
+}
+
+/* ------------------------------------------------------------------ *
+ * SQL IDE editor palette — GitHub Primer colours.                      *
+ * `.dv-ed` follows the app theme (light / dark); `.dv-ed-light` and    *
+ * `.dv-ed-dark` force GitHub Light / GitHub Dark from Editor Settings. *
+ * The CodeMirror theme (components/sql-ide/editorTheme.ts) reads only  *
+ * these variables, so switching never rebuilds the editor.             *
+ * ------------------------------------------------------------------ */
+.dv-ed {
+  --ed-font: "JetBrains Mono", "Cascadia Code", "Cascadia Mono", "SF Mono", Menlo, Consolas, monospace;
+  --ed-font-size: 13px;
+  --ed-line-height: 1.6;
+  --ed-bg: hsl(var(--background));
+  --ed-fg: #1f2328;
+  --ed-panel: #f6f8fa;
+  --ed-popover: #ffffff;
+  --ed-border: #d0d7de;
+  --ed-button: #f6f8fa;
+  --ed-button-hover: #eaeef2;
+  --ed-gutter-fg: #8c959f;
+  --ed-gutter-active: #1f2328;
+  --ed-line-active: rgba(234, 238, 242, 0.55);
+  --ed-selection: rgba(84, 174, 255, 0.28);
+  --ed-selection-match: rgba(84, 174, 255, 0.16);
+  --ed-cursor: #0969da;
+  --ed-keyword: #cf222e;
+  --ed-operator: #cf222e;
+  --ed-string: #0a3069;
+  --ed-number: #0550ae;
+  --ed-comment: #6e7781;
+  --ed-function: #8250df;
+  --ed-type: #953800;
+  --ed-variable: #953800;
+  --ed-punct: #57606a;
+  --ed-invalid: #82071e;
+  --ed-invalid-bg: rgba(255, 129, 130, 0.3);
+  --ed-bracket: rgba(74, 194, 107, 0.18);
+  --ed-bracket-outline: rgba(26, 127, 55, 0.45);
+  --ed-search: rgba(255, 223, 93, 0.45);
+  --ed-search-outline: rgba(212, 167, 44, 0.6);
+  --ed-search-active: rgba(255, 159, 67, 0.55);
+  --ed-fold-bg: #f6f8fa;
+  --ed-accent: #0969da;
+  --ed-accent-fg: #ffffff;
+  --ed-match: #0969da;
+  --ed-stmt-bg: rgba(9, 105, 218, 0.035);
+  --ed-stmt-bar: #0969da;
+  --ed-run: #1a7f37;
+  --ed-executed: rgba(212, 167, 44, 0.22);
+  --ed-error: #cf222e;
+  --ed-snippet: rgba(9, 105, 218, 0.08);
+}
+.dark .dv-ed:not(.dv-ed-light),
+.dv-ed.dv-ed-dark {
+  --ed-fg: #e6edf3;
+  --ed-panel: #161b22;
+  --ed-popover: #161b22;
+  --ed-border: #30363d;
+  --ed-button: #21262d;
+  --ed-button-hover: #30363d;
+  --ed-gutter-fg: #6e7681;
+  --ed-gutter-active: #e6edf3;
+  --ed-line-active: rgba(110, 118, 129, 0.1);
+  --ed-selection: rgba(56, 139, 253, 0.3);
+  --ed-selection-match: rgba(56, 139, 253, 0.15);
+  --ed-cursor: #58a6ff;
+  --ed-keyword: #ff7b72;
+  --ed-operator: #ff7b72;
+  --ed-string: #a5d6ff;
+  --ed-number: #79c0ff;
+  --ed-comment: #8b949e;
+  --ed-function: #d2a8ff;
+  --ed-type: #ffa657;
+  --ed-variable: #ffa657;
+  --ed-punct: #8b949e;
+  --ed-invalid: #ffa198;
+  --ed-invalid-bg: rgba(248, 81, 73, 0.25);
+  --ed-bracket: rgba(63, 185, 80, 0.15);
+  --ed-bracket-outline: rgba(63, 185, 80, 0.5);
+  --ed-search: rgba(187, 128, 9, 0.4);
+  --ed-search-outline: rgba(210, 153, 34, 0.6);
+  --ed-search-active: rgba(219, 109, 40, 0.55);
+  --ed-fold-bg: #21262d;
+  --ed-accent: #1f6feb;
+  --ed-accent-fg: #ffffff;
+  --ed-match: #58a6ff;
+  --ed-stmt-bg: rgba(56, 139, 253, 0.05);
+  --ed-stmt-bar: #388bfd;
+  --ed-run: #3fb950;
+  --ed-executed: rgba(187, 128, 9, 0.28);
+  --ed-error: #f85149;
+  --ed-snippet: rgba(56, 139, 253, 0.12);
+}
+.dv-ed.dv-ed-light { --ed-bg: #ffffff; }
+.dv-ed.dv-ed-dark { --ed-bg: #0d1117; }
+.dv-ed.dv-ed-light, .dv-ed.dv-ed-dark { color-scheme: normal; }
+
+/* Plain (textarea) editor fallback uses the same palette */
+.dv-plain-editor { background: var(--ed-bg); color: var(--ed-fg); }
+.dv-plain-editor textarea { caret-color: var(--ed-cursor); }
+.dv-plain-editor textarea::selection { background: var(--ed-selection); }
+
+/* The editor draws its own caret / focus state. */
+.dv-ed *:focus-visible { box-shadow: none; }
+
+/* IDE chrome helpers */
+.dv-ide-tab-active { box-shadow: inset 0 2px 0 hsl(var(--primary)); }
+.dv-statusbar-prod { background: hsl(var(--destructive)); color: hsl(var(--destructive-foreground)); }
+.dv-grid-cell-active { box-shadow: inset 0 0 0 1.5px hsl(var(--primary)); }
+.dv-resize-handle { transition: background-color 120ms ease; }
+.dv-resize-handle:hover, .dv-resize-handle.dv-dragging { background: hsl(var(--primary) / 0.45); }
+
+
+/* Pulse for running indicators */
+@keyframes pulse-ring {
+  0% { transform: scale(0.8); opacity: 0.8; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+.pulse-ring::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: hsl(var(--primary) / 0.5);
+  animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+}
+
+/* Rail opened by hover floats over the page (shadow without a transition). */
+.dv-rail-float { box-shadow: 10px 0 28px -14px hsl(var(--shadow-color) / 0.45); }
+
+/* Light effects: on PCs without graphics acceleration (virtual desktops,
+ * remote sessions) the browser paints in software, where shadows, blur and
+ * transitions cost the most. Turned on automatically there (lib/effects.ts)
+ * or from Settings. */
+.dv-lite *, .dv-lite *::before, .dv-lite *::after {
+  transition-duration: 0s !important;
+  transition-delay: 0s !important;
+  backdrop-filter: none !important;
+}
+.dv-lite .dv-panel, .dv-lite .dv-glow, .dv-lite .dv-rail-float, .dv-lite [class*="shadow-"] { box-shadow: none !important; }
+.dv-lite .dv-indeterminate::after, .dv-lite .dv-flow, .dv-lite .fade-in, .dv-lite .slide-in-up, .dv-lite .scale-in { animation: none !important; }
+.dv-lite .dv-grid-bg { background-image: none !important; }
