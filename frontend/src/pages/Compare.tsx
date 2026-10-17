@@ -58,6 +58,14 @@ export function specFromDraft(d: Draft): CompareSpec {
   return { name: d.name || null, source: clean(d.source), target: clean(d.target), options: o };
 }
 
+/** Table/query sides without a connection get the first one (first visit, Clear). */
+function withDefaultConnection(d: Draft, connections: { id: number }[]): Draft {
+  const id = connections[0]?.id;
+  if (!id) return d;
+  const fill = (s: SideSpec) => (s.kind !== "file" && !s.connection_id ? { ...s, connection_id: id } : s);
+  return { ...d, source: fill(d.source), target: fill(d.target) };
+}
+
 function useDescribe(side: SideSpec) {
   const complete = sideComplete(side);
   const key = JSON.stringify([side.kind, side.connection_id, side.database, side.schema_name, side.table, side.sql, side.file_id, side.path, side.format, side.options]);
@@ -118,11 +126,7 @@ export function ComparePage() {
   // first visit: default both sides to the first connection
   React.useEffect(() => {
     if (!connections.length) return;
-    setDraft((d) => ({
-      ...d,
-      source: d.source.kind !== "file" && !d.source.connection_id ? { ...d.source, connection_id: connections[0].id } : d.source,
-      target: d.target.kind !== "file" && !d.target.connection_id ? { ...d.target, connection_id: connections[0].id } : d.target,
-    }));
+    setDraft((d) => withDefaultConnection(d, connections));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connections.length]);
 
@@ -179,7 +183,7 @@ export function ComparePage() {
         subtitle="Tables, queries and files in any combination. Runs in the background; you can leave this page."
         actions={
           <>
-            <Button variant="ghost" size="sm" onClick={() => setDraft(blank())}>Clear</Button>
+            <Button variant="ghost" size="sm" onClick={() => setDraft(withDefaultConnection(blank(), connections))}>Clear</Button>
             <Button variant="outline" size="sm" disabled={!ready} onClick={() => save.mutate()}><BookmarkPlus className="h-4 w-4" /> Save as template</Button>
             <Button size="md" disabled={!ready} loading={run.isPending} onClick={() => run.mutate()} className="dv-glow px-5" data-testid="run-compare">
               <Play className="h-4 w-4" /> Run compare <kbd className="ml-1 border-white/20 bg-white/15 text-primary-foreground">Ctrl ↵</kbd>

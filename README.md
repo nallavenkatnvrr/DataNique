@@ -1,8 +1,28 @@
 # Datanique
 
+[![CI](https://github.com/nallavenkatnvrr/DataNique/actions/workflows/ci.yml/badge.svg)](https://github.com/nallavenkatnvrr/DataNique/actions/workflows/ci.yml)
+
 Datanique is a data validation tool I built for comparing data between databases and files. You point it at two sides (a table, a SQL query or a file), it reads both, lines the rows up by key and tells you what matches, what changed and what is missing on either side. It also has a SQL IDE for day to day querying.
 
 Databases: Snowflake, Oracle, SQL Server, PostgreSQL and MySQL. Cross-database compares work too, for example Oracle against Snowflake.
+
+![Datanique home screen](docs/images/home.png)
+
+## See it in action
+
+Comparing a CRM customer table with its warehouse copy (250,000 rows each):
+
+![Comparing two tables](docs/gifs/compare-tables.gif)
+
+| Result | Differences |
+|---|---|
+| ![Result](docs/images/result.png) | ![Changed rows](docs/images/differences-changed.png) |
+
+| CSV file against a table | SQL IDE |
+|---|---|
+| ![CSV against a table](docs/images/compare-csv-file.png) | ![SQL IDE](docs/images/sql-ide.png) |
+
+The [user guide](docs/USER-GUIDE.md) walks through every screen step by step: first launch, connections, comparing tables and files, bulk runs, history, templates and the SQL IDE. The data in the screenshots is made up.
 
 ## What it does
 
@@ -40,6 +60,8 @@ On first start you set a master password. Saved database passwords, run history,
 
 ## Getting started (Windows)
 
+The [user guide](docs/USER-GUIDE.md#1-install-and-first-launch) has the same steps with screenshots.
+
 You need Python 3.10 or newer (I use 3.12) and Node.js 20 or newer.
 
 Easiest way:
@@ -74,6 +96,10 @@ npm run dev
 
 Then open http://localhost:5173.
 
+On first start you create a master password and get a recovery key:
+
+![First launch](docs/gifs/first-launch.gif)
+
 Settings go in `backend/.env`. See `backend/.env.example` for the list. Everything has a working default.
 
 ### Offline PCs
@@ -103,6 +129,7 @@ frontend/
     pages/         Home, Compare, live job, result, Bulk, History, Templates, Connections, SQL IDE, Settings
     components/
     api/
+docs/              user guide, screenshots and GIFs
 desktop_py/        desktop window (pywebview)
 desktop/           Electron shell (optional)
 ```
