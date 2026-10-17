@@ -143,3 +143,31 @@ def test_snowflake_chunk_with_mixed_batch_types():
     assert t.num_rows == 3
     assert t.column("END_DATE").type == pa.timestamp("us")
     assert t.column("END_DATE")[2].as_py().year == 9999
+
+
+def test_job_is_done_only_after_the_run_is_saved(api_client, tmp_path, monkeypatch):
+    """A job reported "done" must already be in history (the live page opens
+    the result as soon as it sees "done"). CI caught this as a race."""
+    import time as _time
+    from app.engine import jobs
+
+    real = jobs.persist_run
+
+    def slow_persist(*a, **kw):
+        _time.sleep(0.8)
+        return real(*a, **kw)
+
+    monkeypatch.setattr(jobs, "persist_run", slow_persist)
+    a = _csv(tmp_path / "a.csv", "id,v\n1,a\n2,b\n")
+    b = _csv(tmp_path / "b.csv", "id,v\n1,a\n2,c\n")
+    r = api_client.post("/api/jobs/compare", json={"source": a, "target": b, "options": {"key_columns": ["id"]}})
+    job = r.json()
+    deadline = _time.time() + 60
+    while _time.time() < deadline:
+        snap = api_client.get(f"/api/jobs/{job['id']}").json()
+        if snap["status"] not in ("queued", "running"):
+            break
+        _time.sleep(0.02)
+    assert snap["status"] == "done"
+    run = api_client.get(f"/api/compare/runs/{snap['run_uuid']}")
+    assert run.status_code == 200 and run.json()["result"]["row_diff"]["key_match_hash_diff_count"] == 1

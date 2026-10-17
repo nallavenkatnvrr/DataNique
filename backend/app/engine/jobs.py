@@ -214,23 +214,23 @@ class JobManager:
         job._labels = job._labels or (_label(spec.source), _label(spec.target))
         job.emit("info", f"Comparing {job._labels[0]} → {job._labels[1]}")
         result: dict
+        # The final status is set only after the run is saved, so anyone who
+        # sees "done" (the live page, a test) can open the run right away.
+        final = "done"
         try:
             result = run_compare(spec, rc)
-            job.status = "done"
             job.emit("info", f"Verdict: {result.get('verdict')} in {result.get('elapsed_ms', 0) / 1000:.2f}s")
         except InterruptedError:
-            job.status = "cancelled"
+            final = "cancelled"
             job.emit("warn", "Cancelled")
             result = _error_result(job, spec, "Cancelled", status="CANCELLED")
         except Exception as exc:
-            job.status = "error"
+            final = "error"
             job.error = f"{type(exc).__name__}: {exc}"[:2000]
             log.exception("compare job %s failed", job.id)
             job.emit("error", job.error)
             result = _error_result(job, spec, job.error, tb=traceback.format_exc())
-        finally:
-            job.finished_at = time.time()
-            job.phase = "finished"
+        job.phase = "store"
         result["logs"] = [{"level": e["level"], "ts": e["ts"], "msg": e["msg"]} for e in job.events]
         job.result = result
         job.result_summary = _summary(result)
@@ -239,8 +239,11 @@ class JobManager:
         except Exception as exc:
             log.exception("could not save run")
             job.emit("warn", f"The run finished but could not be saved to history: {exc}")
-        if job.status != "done":
+        if final != "done":
             _drop_store(job.run_uuid)
+        job.finished_at = time.time()
+        job.phase = "finished"
+        job.status = final
 
     # -- bulk
     def submit_bulk(self, spec: BulkSpec) -> Job:
