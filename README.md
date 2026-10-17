@@ -1,12 +1,23 @@
 # Datanique
 
 [![CI](https://github.com/nallavenkatnvrr/DataNique/actions/workflows/ci.yml/badge.svg)](https://github.com/nallavenkatnvrr/DataNique/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/nallavenkatnvrr/DataNique)](https://github.com/nallavenkatnvrr/DataNique/releases/latest)
+[![Docker image](https://img.shields.io/badge/docker-ghcr.io%2Fnallavenkatnvrr%2Fdatanique-2496ED?logo=docker&logoColor=white)](https://github.com/nallavenkatnvrr/DataNique/pkgs/container/datanique)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 Datanique is a data validation tool I built for comparing data between databases and files. You point it at two sides (a table, a SQL query or a file), it reads both, lines the rows up by key and tells you what matches, what changed and what is missing on either side. It also has a SQL IDE for day to day querying.
 
 Databases: Snowflake, Oracle, SQL Server, PostgreSQL and MySQL. Cross-database compares work too, for example Oracle against Snowflake.
 
 ![Datanique home screen](docs/images/home.png)
+
+## Get Datanique
+
+| | How |
+|---|---|
+| **Windows, ready to run** | Download `datanique-<version>-app.zip` from the [latest release](https://github.com/nallavenkatnvrr/DataNique/releases/latest), unzip it and run `start-app.bat`. You need Python 3.10 or newer. |
+| **Docker** | `docker run -d --name datanique -p 127.0.0.1:8000:8000 -v datanique-data:/data ghcr.io/nallavenkatnvrr/datanique:latest` then open http://localhost:8000 |
+| **From source** | `git clone https://github.com/nallavenkatnvrr/DataNique.git` and follow [Getting started](#getting-started-windows). |
 
 ## See it in action
 
@@ -101,6 +112,24 @@ On first start you create a master password and get a recovery key:
 ![First launch](docs/gifs/first-launch.gif)
 
 Settings go in `backend/.env`. See `backend/.env.example` for the list. Everything has a working default.
+
+### Docker
+
+```
+docker run -d --name datanique -p 127.0.0.1:8000:8000 \
+  -v datanique-data:/data \
+  ghcr.io/nallavenkatnvrr/datanique:latest
+```
+
+Open http://localhost:8000 and create the master password. Everything Datanique stores (connections, history, saved differences) is in the `datanique-data` volume. Some notes:
+
+- Keep the port on `127.0.0.1`. Datanique is a single-user tool and the API is protected by the master password, not by user accounts.
+- To compare files, mount the folder, for example `-v D:\exports:/files:ro`, and use `/files/...` as the path.
+- If you open it through another host name, add it with `-e DV_ALLOWED_HOSTS=myhost`.
+- For an unattended server you can pass the master password with `-e DV_VAULT_PASSWORD=...`.
+- SQL Server: the image has unixODBC but not the Microsoft ODBC driver. Build your own image on top of it with `msodbcsql18` if you compare SQL Server tables.
+
+Build it yourself with `docker build -t datanique .`.
 
 ### Offline PCs
 

@@ -1,25 +1,34 @@
-# Release files with SLSA provenance
+# Release with SLSA provenance
 #
-# When you publish a GitHub release, this builds the release files, attaches
-# them to the release and adds a signed SLSA level 3 provenance file
-# (*.intoto.jsonl) that proves they were built here from this repository.
+# Push a version tag to release:
 #
-#   datanique-<tag>-source.zip          the source code at the release tag
-#   datanique-<tag>-frontend-dist.zip   the built frontend (frontend/dist)
+#   git tag v0.3.4 && git push origin v0.3.4
+#
+# This builds the release files, creates the GitHub release (notes come from
+# that version's section in CHANGELOG-0.3.md) and adds a signed SLSA level 3
+# provenance file (*.intoto.jsonl) proving the files were built here from
+# this repository.
+#
+#   datanique-<tag>-app.zip      ready to run on Windows: unzip, run start-app.bat
+#                                (the frontend is already built, no Node.js needed)
+#   datanique-<tag>-source.zip   the source code at the tag
+#
+# Publishing a release by hand on GitHub works too: the files are added to it.
+# Started from the Actions tab, it builds the files and keeps them, with the
+# provenance, as workflow artifacts.
 #
 # Check a download with slsa-verifier:
-#   slsa-verifier verify-artifact datanique-v0.3.2-source.zip \
+#   slsa-verifier verify-artifact datanique-v0.3.3-app.zip \
 #     --provenance-path multiple.intoto.jsonl \
-#     --source-uri github.com/nallavenkatnvrr/DataNique --source-tag v0.3.2
-#
-# Started by hand (Actions > Run workflow) it builds the same files and keeps
-# them, with the provenance, as workflow artifacts instead.
+#     --source-uri github.com/nallavenkatnvrr/DataNique --source-tag v0.3.3
 #
 # About SLSA: https://slsa.dev  Generator: https://github.com/slsa-framework/slsa-github-generator
 
-name: Release files with SLSA provenance
+name: Release
 
 on:
+  push:
+    tags: ["v*"]
   release:
     types: [published]
   workflow_dispatch:
@@ -30,9 +39,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # attach the files to the release
+      contents: write # create the release and attach the files
     outputs:
       digests: ${{ steps.hash.outputs.digests }}
+      tag: ${{ steps.pkg.outputs.tag }}
     steps:
       - uses: actions/checkout@v7
 
@@ -49,12 +59,22 @@ jobs:
           npm run build
 
       - name: Package the release files
+        id: pkg
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
           set -euo pipefail
-          version="${GITHUB_REF_NAME//\//-}"
+          tag="${RELEASE_TAG:-$GITHUB_REF_NAME}"
+          version="${tag//\//-}"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
           mkdir out
           git archive --format=zip --prefix="datanique-${version}/" -o "out/datanique-${version}-source.zip" HEAD
-          (cd frontend/dist && zip -qr "../../out/datanique-${version}-frontend-dist.zip" . -x '*.map')
+          # app zip = source + built frontend, ready for start-app.bat
+          git archive --format=tar --prefix="datanique-${version}/" HEAD | tar -x -C out
+          mkdir -p "out/datanique-${version}/frontend"
+          cp -r frontend/dist "out/datanique-${version}/frontend/dist"
+          (cd out && zip -qr "datanique-${version}-app.zip" "datanique-${version}" -x '*.map')
+          rm -rf "out/datanique-${version}"
           ls -l out
 
       - name: Hash the files for the provenance
@@ -64,15 +84,43 @@ jobs:
           set -euo pipefail
           echo "digests=$(sha256sum -- * | base64 -w0)" >> "$GITHUB_OUTPUT"
 
+      - name: Release notes from the changelog
+        if: github.event_name == 'push'
+        env:
+          TAG: ${{ steps.pkg.outputs.tag }}
+        run: |
+          set -euo pipefail
+          ver="${TAG#v}"
+          awk -v ver="$ver" '/^# Datanique / { if (p) exit; if ($3 == ver) p = 1 } p' CHANGELOG-0.3.md > notes.md
+          if [ ! -s notes.md ]; then echo "Datanique $TAG" > notes.md; fi
+          {
+            echo
+            echo "## Get it"
+            echo
+            echo "- **Windows, ready to run:** download \`datanique-${TAG}-app.zip\`, unzip it and run \`start-app.bat\`."
+            echo "- **Docker:** \`docker run -d -p 127.0.0.1:8000:8000 -v datanique-data:/data ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/datanique:${ver}\`, then open http://localhost:8000"
+            echo "- **From source:** see the README."
+            echo
+            echo "Each file has a signed SLSA provenance (\`multiple.intoto.jsonl\`) you can check with slsa-verifier."
+          } >> notes.md
+          cat notes.md
+
+      - name: Create the release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.pkg.outputs.tag }}
+        run: gh release create "$TAG" out/* --title "Datanique $TAG" --notes-file notes.md --verify-tag
+
       - name: Attach the files to the release
         if: github.event_name == 'release'
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.event.release.tag_name }}
+          TAG: ${{ steps.pkg.outputs.tag }}
         run: gh release upload "$TAG" out/* --clobber
 
       - name: Keep the files (manual run)
-        if: github.event_name != 'release'
+        if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v7
         with:
           name: datanique-release-files
@@ -88,4 +136,5 @@ jobs:
     uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.1.0
     with:
       base64-subjects: "${{ needs.build.outputs.digests }}"
-      upload-assets: ${{ github.event_name == 'release' }}
+      upload-assets: ${{ github.event_name != 'workflow_dispatch' }}
+      upload-tag-name: ${{ needs.build.outputs.tag }}

@@ -1,3 +1,15 @@
+# Datanique 0.3.3
+
+Date: 17 Oct 2026.
+
+- A finished compare is marked done only after it is saved to history. On a
+  slow PC the live page could open the result a moment too early and show
+  "Run not found".
+- Compare page: Clear keeps the default connection on table and query sides,
+  so you can pick a table straight away.
+- README rewritten, user guide with screenshots (docs/USER-GUIDE.md), plain
+  hyphens instead of em dashes in docs and comments.
+
 # Datanique 0.3.2 - smoother UI on slow PCs and virtual desktops
 
 Date: 16 Oct 2026. Measured in Chromium with the CPU slowed 4× and no GPU

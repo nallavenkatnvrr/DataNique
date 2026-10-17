@@ -1,0 +1,11 @@
+name: Feature request
+description: An idea or something that would make Datanique more useful
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like?
+      description: The problem you're trying to solve, and how you'd like it to work.
+    validations:
+      required: true

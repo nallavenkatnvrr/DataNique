@@ -1,0 +1,33 @@
+name: Bug report
+description: Something doesn't work or gives a wrong result
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected and what you got instead. Screenshots help.
+    validations:
+      required: true
+  - type: dropdown
+    id: sides
+    attributes:
+      label: What were you comparing?
+      multiple: true
+      options: [Snowflake, Oracle, SQL Server, PostgreSQL, MySQL, CSV / text file, Excel, Parquet, JSON, Other file, Not a compare (SQL IDE / other)]
+  - type: textarea
+    id: log
+    attributes:
+      label: Run log or error
+      description: From the result page (Log tab) or the backend window. Remove hostnames, passwords and data you can't share.
+      render: text
+  - type: input
+    id: version
+    attributes:
+      label: Datanique version
+      description: Settings > Engine & readers, or the release you downloaded.
+  - type: dropdown
+    id: how
+    attributes:
+      label: How do you run it?
+      options: [Windows (start-app.bat), Docker, From source]
