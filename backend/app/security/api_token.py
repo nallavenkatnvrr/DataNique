@@ -1,4 +1,4 @@
-"""Optional API-token gate — pure logic, so it's unit-testable without a server.
+"""Optional API-token gate - pure logic, so it's unit-testable without a server.
 
 The app has no login. When ``DV_API_TOKEN`` is configured, every ``/api/*``
 request (except the exempt liveness paths) must present the matching token.
@@ -25,7 +25,7 @@ def tokens_match(supplied: str | None, expected: str) -> bool:
     """Constant-time token comparison.
 
     Uses :func:`hmac.compare_digest` so a wrong token takes the same time to
-    reject regardless of how many leading characters happen to be correct —
+    reject regardless of how many leading characters happen to be correct -
     closing the timing side-channel that a plain ``!=`` opens.
     """
     if not supplied:
@@ -36,7 +36,7 @@ def tokens_match(supplied: str | None, expected: str) -> bool:
 def should_block(path: str, supplied: str | None, expected: str) -> bool:
     """Return True if a request to ``path`` should be rejected as unauthorized.
 
-    * When ``expected`` is empty the gate is disabled — never block.
+    * When ``expected`` is empty the gate is disabled - never block.
     * Only ``/api/*`` paths are guarded (static assets / SPA are untouched).
     * Exempt paths are always allowed.
     * Otherwise the supplied token must match (constant-time).

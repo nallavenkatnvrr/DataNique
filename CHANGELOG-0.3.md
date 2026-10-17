@@ -1,4 +1,4 @@
-# Datanique 0.3.2 — smoother UI on slow PCs and virtual desktops
+# Datanique 0.3.2 - smoother UI on slow PCs and virtual desktops
 
 Date: 16 Oct 2026. Measured in Chromium with the CPU slowed 4× and no GPU
 acceleration (like a virtual desktop):
@@ -25,7 +25,7 @@ acceleration (like a virtual desktop):
   has no graphics acceleration (software renderer).
 - Compare drafts are saved after you pause typing, not on every key.
 
-# Datanique 0.3.1 — fixes from the first Windows runs
+# Datanique 0.3.1 - fixes from the first Windows runs
 
 Date: 16 Oct 2026.
 
@@ -49,7 +49,7 @@ Date: 16 Oct 2026.
 - Progress: Oracle / Snowflake / cursor readers now show a percentage from
   the table's catalog row count instead of 0%.
 
-# Datanique 0.3 — new compare engine, encryption, redesigned app
+# Datanique 0.3 - new compare engine, encryption, redesigned app
 
 Date: 16 Oct 2026. Builds on the SQL IDE update (CHANGELOG-SQL-IDE.md).
 
@@ -59,11 +59,11 @@ One DuckDB-based engine for every comparison. Each side is a **table**, a
 **SQL query** or a **file**, in any combination.
 
 - **Readers** (first that works is used; the run log names it):
-  PostgreSQL — DuckDB scanner (parallel binary COPY) → ADBC → cursor ·
-  MySQL — DuckDB scanner → ADBC (dbc) → ConnectorX → cursor ·
-  SQL Server — ADBC (dbc `mssql`) → Arrow ODBC → ConnectorX → cursor ·
-  Snowflake — ADBC (password logins) → connector Arrow batches (SSO keeps its
-  session) → cursor · Oracle — python-oracledb Arrow batches → ConnectorX →
+  PostgreSQL - DuckDB scanner (parallel binary COPY) → ADBC → cursor ·
+  MySQL - DuckDB scanner → ADBC (dbc) → ConnectorX → cursor ·
+  SQL Server - ADBC (dbc `mssql`) → Arrow ODBC → ConnectorX → cursor ·
+  Snowflake - ADBC (password logins) → connector Arrow batches (SSO keeps its
+  session) → cursor · Oracle - python-oracledb Arrow batches → ConnectorX →
   cursor. Both sides are read at the same time. Override the order with
   `DV_READER_ORDER_<DB>`.
 - **Files:** CSV / TSV / PSV / TXT / DAT (+ .gz .zst .zip, any encoding),

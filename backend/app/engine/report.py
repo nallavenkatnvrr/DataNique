@@ -150,7 +150,7 @@ def build_run_report(out: Path, result: dict, run_uuid: str) -> None:
             ("Started", result.get("started_at")),
             ("Duration (s)", round((result.get("elapsed_ms") or 0) / 1000, 3)),
             ("Strategy", f"{result.get('strategy')} / {rd.get('strategy')}"),
-            ("Key columns", ", ".join(result.get("key_columns") or []) or "— (whole-row compare)"),
+            ("Key columns", ", ".join(result.get("key_columns") or []) or "- (whole-row compare)"),
             ("", ""),
             ("", "Source", "Target"),
             ("Object", src.get("label"), tgt.get("label")),

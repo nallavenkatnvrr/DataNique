@@ -185,7 +185,7 @@ function useEndTrigger(virt: { getVirtualItems: () => { index: number }[] }, cou
 
 /* Grids: rows AND columns are virtualized (only what is on screen is in the
  * DOM, so a 60-column table scrolls as smoothly as a 5-column one). Cells are
- * absolutely positioned with fixed widths — no per-row CSS grid layout. The
+ * absolutely positioned with fixed widths - no per-row CSS grid layout. The
  * row number and key columns stay pinned on the left. */
 const ROW_NUM_W = 64;
 

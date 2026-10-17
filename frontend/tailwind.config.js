@@ -49,8 +49,8 @@ export default {
         },
         // Phase 4.39: popover MUST be registered explicitly here for
         // the `bg-popover` and `text-popover-foreground` classes to
-        // resolve. Without this, those classes produce NO CSS — Tailwind
-        // doesn't know `popover` is a color name — leaving every dropdown
+        // resolve. Without this, those classes produce NO CSS - Tailwind
+        // doesn't know `popover` is a color name - leaving every dropdown
         // and context menu transparent. The CSS variables `--popover` /
         // `--popover-foreground` are defined in index.css but Tailwind
         // only generates utilities for colors listed in `theme.extend.colors`.

@@ -209,7 +209,7 @@
 }
 
 /* ------------------------------------------------------------------ *
- * SQL IDE editor palette — GitHub Primer colours.                      *
+ * SQL IDE editor palette - GitHub Primer colours.                      *
  * `.dv-ed` follows the app theme (light / dark); `.dv-ed-light` and    *
  * `.dv-ed-dark` force GitHub Light / GitHub Dark from Editor Settings. *
  * The CodeMirror theme (components/sql-ide/editorTheme.ts) reads only  *

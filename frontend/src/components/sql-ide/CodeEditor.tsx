@@ -1,5 +1,5 @@
 /**
- * SQL editor for the IDE — CodeMirror 6 driven directly (no React wrapper),
+ * SQL editor for the IDE - CodeMirror 6 driven directly (no React wrapper),
  * styled after GitHub's code editor.
  *
  * Why direct: one EditorView lives for the page and each script tab keeps
@@ -331,7 +331,7 @@ export const CodeEditor = React.forwardRef<SqlEditorHandle, Props>(function Code
         const line = ctx.state.doc.lineAt(ctx.pos);
         let res: any;
         try {
-          // Only parse the current statement — whole-document parses lag on big scripts.
+          // Only parse the current statement - whole-document parses lag on big scripts.
           const doc = ctx.state.doc.toString();
           const stmts = splitSqlStatements(doc, dbType);
           const cur = statementAt(stmts, ctx.pos, doc);

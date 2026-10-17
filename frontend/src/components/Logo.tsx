@@ -1,8 +1,8 @@
 import * as React from "react";
 
 /**
- * Datanique mark: two overlapping rings (source and target) whose overlap —
- * the data that agrees — is lit. Inline SVG so it stays crisp at any size.
+ * Datanique mark: two overlapping rings (source and target) whose overlap -
+ * the data that agrees - is lit. Inline SVG so it stays crisp at any size.
  */
 export function Logo({ className, title = "Datanique" }: { className?: string; title?: string }) {
   const uid = React.useId().replace(/:/g, "");

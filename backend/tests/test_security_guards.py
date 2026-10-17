@@ -1,9 +1,9 @@
 """Unit tests for the security guards (pure logic, no server needed).
 
 Covers:
-* ``app.security.sql_guard`` — the ``filter_sql`` stacked-statement / comment
+* ``app.security.sql_guard`` - the ``filter_sql`` stacked-statement / comment
   tripwire.
-* ``app.security.api_token`` — the optional API-token gate decision.
+* ``app.security.api_token`` - the optional API-token gate decision.
 """
 from __future__ import annotations
 
@@ -111,7 +111,7 @@ def test_admin_gate_disabled_when_no_expected_token():
 
 
 def test_admin_gate_only_guards_admin_prefixes():
-    # A normal API path is NOT the admin surface — admin gate ignores it.
+    # A normal API path is NOT the admin surface - admin gate ignores it.
     assert should_block_admin("/api/connections", None, "adm") is False
 
 

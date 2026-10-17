@@ -340,7 +340,7 @@ export function VisualDiffPanel({
                 onDiffIdsChange(side === "Left" ? [e.target.value, rightId] : [leftId, e.target.value])
               }
             >
-              <option value="">— select —</option>
+              <option value="">- select -</option>
               {sources.map((t) => (
                 <option key={t.id} value={t.id}>
                   {optionLabel(t)}
@@ -451,7 +451,7 @@ export function VisualDiffPanel({
                             leftValues: row.cells.map((c) => c.left as any),
                             rightValues: row.cells.map((c) => c.right as any),
                             matches: row.cells.map((c) => c.match),
-                            title: `Row ${row.rowIdx + 1} — full L/R values`,
+                            title: `Row ${row.rowIdx + 1} - full L/R values`,
                           })
                         }
                         title="View full L/R values for this row"

@@ -1,5 +1,5 @@
 /**
- * SQL IDE page — layout and command wiring.
+ * SQL IDE page - layout and command wiring.
  *
  *  ┌──┬────────────┬───────────────────────────────────────────────┐
  *  │A │ Side bar   │ Script tabs                                    │
@@ -346,7 +346,7 @@ export function SqlIdePage() {
             <div className="space-y-2">
               <p>
                 {modifying.length === 1 ? "This statement changes" : `${modifying.length} statements change`} data or schema
-                {t.autocommit ? " and will be committed immediately (auto-commit)." : " (manual commit — you can still roll back)."}
+                {t.autocommit ? " and will be committed immediately (auto-commit)." : " (manual commit - you can still roll back)."}
               </p>
               <pre className="max-h-40 overflow-auto rounded-md border bg-muted/50 p-2 font-mono text-[11px] text-foreground">
                 {modifying[0].text.slice(0, 800)}
@@ -1034,7 +1034,7 @@ export function SqlIdePage() {
             <DialogTitle>Save script</DialogTitle>
             <DialogDescription>
               Saved to the script library for{" "}
-              <span className="font-medium text-foreground">{connections.find((c) => c.id === getTab(saveDlg?.tabId ?? "")?.connectionId)?.name ?? "—"}</span>.
+              <span className="font-medium text-foreground">{connections.find((c) => c.id === getTab(saveDlg?.tabId ?? "")?.connectionId)?.name ?? "-"}</span>.
               Saving again keeps the previous version.
             </DialogDescription>
           </DialogHeader>

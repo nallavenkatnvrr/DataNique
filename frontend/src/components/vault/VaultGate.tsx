@@ -238,7 +238,7 @@ function RecoveryShown({ recoveryKey, migration, onContinue }: { recoveryKey: st
       await navigator.clipboard.writeText(recoveryKey);
       toast.success("Recovery key copied");
     } catch {
-      toast.error("Copy failed — select and copy it manually");
+      toast.error("Copy failed - select and copy it manually");
     }
   };
   const download = () => {

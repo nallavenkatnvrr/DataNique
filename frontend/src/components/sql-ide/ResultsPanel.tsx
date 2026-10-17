@@ -766,7 +766,7 @@ function MessageRow({ m, onGoto }: { m: StatementMessage; onGoto: () => void }) 
         {m.status === "skipped" && <div className="text-[11px] text-muted-foreground">skipped after an earlier error</div>}
       </td>
       <td className="py-1 pr-2 text-right tabular-nums text-muted-foreground">
-        {m.affected_rows != null ? `${formatNumber(m.affected_rows)} affected` : m.result_sets.length ? `${formatNumber(m.rows)} rows` : "—"}
+        {m.affected_rows != null ? `${formatNumber(m.affected_rows)} affected` : m.result_sets.length ? `${formatNumber(m.rows)} rows` : "-"}
       </td>
       <td className="py-1 text-right tabular-nums text-muted-foreground">{m.status === "skipped" ? "" : formatDuration(m.elapsed_ms)}</td>
     </tr>

@@ -1,4 +1,4 @@
-"""User settings API — configurable on-disk locations for scripts & exports."""
+"""User settings API - configurable on-disk locations for scripts & exports."""
 from __future__ import annotations
 
 from pathlib import Path

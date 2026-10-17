@@ -70,11 +70,11 @@ def list_columns(conn_id: int, table: str, database: str | None = None, schema: 
 #
 # Security note: db/schema/name values reaching these helpers come from the
 # saved connection record or from UI dropdowns that are themselves populated
-# from the live DB — but we still apply defense-in-depth quoting so a name
+# from the live DB - but we still apply defense-in-depth quoting so a name
 # containing a quote, bracket, or dot can never break out of its context:
 #
-#   _lit(s)              — a SQL string LITERAL: single quotes doubled, wrapped.
-#   _ident(name, db_type)— a quoted IDENTIFIER: ["..."]/[...] per dialect with
+#   _lit(s)              - a SQL string LITERAL: single quotes doubled, wrapped.
+#   _ident(name, db_type)- a quoted IDENTIFIER: ["..."]/[...] per dialect with
 #                          the closing delimiter doubled.
 #
 # These replace the ad-hoc ``.replace(chr(39), chr(39)+chr(39))`` calls and,
@@ -195,7 +195,7 @@ def _safe_query(connector, sql: str) -> list[str]:
 
 @router.get("/{conn_id}/objects")
 def list_objects(conn_id: int, database: str | None = None, schema: str | None = None) -> dict:
-    """List all DB objects grouped by type — like DBeaver / Snowflake UI object explorer."""
+    """List all DB objects grouped by type - like DBeaver / Snowflake UI object explorer."""
     rec = _load(conn_id)
     connector = get_connector(rec, purpose="metadata")
     db_type = (rec.db_type or "").lower()

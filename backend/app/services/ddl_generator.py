@@ -84,7 +84,7 @@ def generate_insert(
             if v is None:
                 vals.append("NULL")
             elif isinstance(v, bool):
-                # NOTE: bool must be checked BEFORE int — bool subclasses int,
+                # NOTE: bool must be checked BEFORE int - bool subclasses int,
                 # so an (int, float) test would catch True/False first and emit
                 # the invalid literal "True"/"False" instead of 1/0.
                 vals.append("1" if v else "0")

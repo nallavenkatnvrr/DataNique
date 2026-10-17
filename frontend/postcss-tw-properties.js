@@ -3,8 +3,8 @@
  * (`*, ::before, ::after { --tw-translate-x: 0; ... }`). Applying them on
  * every style recalculation doubles its cost, which made scrolling large
  * grids lag on slow or GPU-less PCs. The same defaults are declared once
- * with `@property` (non-inherited, like Tailwind's per-element reset) — the
- * approach Tailwind 4 uses — and the per-element rules are removed.
+ * with `@property` (non-inherited, like Tailwind's per-element reset) - the
+ * approach Tailwind 4 uses - and the per-element rules are removed.
  */
 const SELECTORS = new Set(["*, ::before, ::after", "*,::before,::after", "::backdrop"]);
 

@@ -1,5 +1,5 @@
 # =============================================================================
-# Datanique (Data Validator) — git ignore
+# Datanique (Data Validator) - git ignore
 # =============================================================================
 
 # ----- Secrets & local config (NEVER commit) -----
@@ -30,7 +30,7 @@ node_modules/
 frontend/dist/
 frontend/.vite/
 *.local
-# tsc output next to the Vite config shadows vite.config.ts — never keep it
+# tsc output next to the Vite config shadows vite.config.ts - never keep it
 frontend/vite.config.js
 frontend/vite.config.d.ts
 frontend/vite.config.*.timestamp-*.mjs

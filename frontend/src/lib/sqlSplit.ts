@@ -23,7 +23,7 @@
  * Offsets are in UTF-16 code units of the input string (what CodeMirror and
  * textarea selection APIs use).
  *
- * Keep in sync with backend/app/services/sql_split.py — both implement the
+ * Keep in sync with backend/app/services/sql_split.py - both implement the
  * same rules and share test cases.
  */
 

@@ -1,4 +1,4 @@
-"""SQL IDE router — execute queries, manage sessions, generate DDL/INSERT/EXEC.
+"""SQL IDE router - execute queries, manage sessions, generate DDL/INSERT/EXEC.
 
 This powers the SQL IDE tab in the frontend, providing DBeaver-like functionality:
 - Multiple script tabs (sessions) with independent connections
@@ -235,21 +235,21 @@ def get_execution(
     """Return execution status (+ optionally rows).
 
     When ``lightweight=true``, only status / row_count / error / timing are
-    returned — the full ``rows`` and ``columns`` arrays are omitted. The
+    returned - the full ``rows`` and ``columns`` arrays are omitted. The
     frontend polls in lightweight mode while the query is running so the
     growing in-flight rows array isn't shipped 2x/s, then fetches the full
     payload once on completion.
 
     When ``limit`` is provided, only the row window ``[offset:offset+limit]``
     is shipped (plus ``has_more`` / ``total_rows``) so the grid can show the
-    first page immediately and lazily "Load more" as the user scrolls —
-    DBeaver-style — without transferring the whole result at once.
+    first page immediately and lazily "Load more" as the user scrolls -
+    DBeaver-style - without transferring the whole result at once.
     """
     ex = query_manager.get_execution(session_id, exec_id)
     if not ex:
         raise HTTPException(404, "Execution not found")
     if lightweight:
-        # Return summary_dict (no row data) + status — small + cheap to serialize
+        # Return summary_dict (no row data) + status - small + cheap to serialize
         d = ex.summary_dict()
         d["affected_rows"] = ex.affected_rows
         return d
@@ -264,7 +264,7 @@ def get_execution_rows(
     limit: int = 200,
     set_index: int = 0,
 ) -> dict:
-    """Return just a row window for one result set — for lazy scroll.
+    """Return just a row window for one result set - for lazy scroll.
 
     Rows are sliced from the already-fetched in-memory result, so this is
     cheap and never re-hits the database."""
@@ -363,7 +363,7 @@ class DiffCell(BaseModel):
 
     Values are passed as their string-rendered form because the frontend
     has already converted them via String(value) when computing the
-    diff. Preserving original types isn't needed for the Excel export —
+    diff. Preserving original types isn't needed for the Excel export -
     the goal is to faithfully reproduce what the user saw on screen.
     """
     left: str | None = None
@@ -379,7 +379,7 @@ class DiffRow(BaseModel):
 
 
 class DiffExportRequest(BaseModel):
-    """Payload from the frontend — exact replica of the visual diff state."""
+    """Payload from the frontend - exact replica of the visual diff state."""
     left_label: str = "Left"
     right_label: str = "Right"
     columns: list[str]
@@ -432,7 +432,7 @@ def export_diff_excel(req: DiffExportRequest, save_to_disk: bool = False) -> Res
     def _escape_control(value):
         """Make non-printable control chars visible in Excel cells.
         Mirrors the frontend `escapeControlCharsPlain` helper so the
-        exported workbook is consistent with what's on screen — NUL
+        exported workbook is consistent with what's on screen - NUL
         bytes become ``[NUL]``, TAB → ``[TAB]``, etc. xlsxwriter
         writes raw NUL bytes as garbage / strips them, so escaping is
         also needed to PRESERVE the data, not just to make it visible.
@@ -677,8 +677,8 @@ def export_diff_excel(req: DiffExportRequest, save_to_disk: bool = False) -> Res
         cs.write(ci_row, 1, col_name, fmt_summary_value)
         if col_name in hidden_set:
             cs.write(ci_row, 2, "Excluded", wb.add_format({"border": 1, "font_color": "#9CA3AF", "italic": True}))
-            cs.write(ci_row, 3, "—", fmt_summary_value)
-            cs.write(ci_row, 4, "—", fmt_summary_value)
+            cs.write(ci_row, 3, "-", fmt_summary_value)
+            cs.write(ci_row, 4, "-", fmt_summary_value)
         else:
             diffs = col_diff_counts.get(col_name, 0)
             pct = ((row_total - diffs) / row_total * 100) if row_total > 0 else 100
@@ -700,7 +700,7 @@ def export_diff_excel(req: DiffExportRequest, save_to_disk: bool = False) -> Res
     for ci, col in enumerate(req.columns):
         d.write(0, 2 + ci, col, fmt_header)
 
-    # Data — two physical rows per logical diff row (L then R), with
+    # Data - two physical rows per logical diff row (L then R), with
     # the # column merged across both. Cell formatting mirrors the
     # frontend: red bg on L mismatches, green bg on R mismatches.
     excel_row = 1  # start after header

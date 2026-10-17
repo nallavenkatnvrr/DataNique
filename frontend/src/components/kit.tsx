@@ -108,7 +108,7 @@ export function VerdictBadge({ verdict, size = "md" }: { verdict: Verdict; size?
     : v === "ERROR" ? { c: "text-destructive bg-destructive/10 border-destructive/30", i: <XCircle className="h-3.5 w-3.5" />, t: "Error" }
     : v === "CANCELLED" ? { c: "text-muted-foreground bg-muted border-border", i: <CircleSlash className="h-3.5 w-3.5" />, t: "Cancelled" }
     : v === "RUNNING" ? { c: "text-primary bg-primary/10 border-primary/30", i: <Loader2 className="h-3.5 w-3.5 animate-spin" />, t: "Running" }
-    : { c: "text-muted-foreground bg-muted border-border", i: null, t: v ? v.toLowerCase() : "—" };
+    : { c: "text-muted-foreground bg-muted border-border", i: null, t: v ? v.toLowerCase() : "-" };
   return (
     <span className={cn("inline-flex items-center gap-1 rounded-full border font-semibold", cfg.c,
       size === "sm" ? "px-1.5 py-0 text-[10.5px]" : size === "lg" ? "px-3 py-1 text-sm" : "px-2 py-0.5 text-xs")}>
@@ -146,7 +146,7 @@ export function MatchRing({ equal, total, size = 120, stroke = 10 }: { equal: nu
   const c = 2 * Math.PI * r;
   const frac = total > 0 ? equal / total : 0;
   const pct = total > 0 ? frac * 100 : 0;
-  const label = total === 0 ? "—" : pct >= 99.995 && equal !== total ? "99.99%" : `${pct.toFixed(pct >= 99.9 || pct < 1 ? 2 : 1)}%`;
+  const label = total === 0 ? "-" : pct >= 99.995 && equal !== total ? "99.99%" : `${pct.toFixed(pct >= 99.9 || pct < 1 ? 2 : 1)}%`;
   return (
     <div className="relative" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
@@ -210,19 +210,19 @@ export function KindIcon({ kind, className }: { kind?: string | null; className?
   const map: Record<string, string> = { table: "TBL", query: "SQL", file: "FILE", mixed: "MIX" };
   return (
     <span className={cn("inline-grid h-5 min-w-[30px] place-items-center rounded border bg-muted px-1 font-mono text-[9.5px] font-semibold text-muted-foreground", className)}>
-      {map[kind || ""] ?? (kind || "—").toUpperCase().slice(0, 4)}
+      {map[kind || ""] ?? (kind || "-").toUpperCase().slice(0, 4)}
     </span>
   );
 }
 
 export function compactNumber(n: number | null | undefined): string {
-  if (n == null) return "—";
+  if (n == null) return "-";
   if (Math.abs(n) < 100_000_000) return n.toLocaleString();
   return new Intl.NumberFormat(undefined, { notation: "compact", maximumFractionDigits: 1 }).format(n);
 }
 
 export function timeAgo(iso: string | null | undefined): string {
-  if (!iso) return "—";
+  if (!iso) return "-";
   const d = (Date.now() - new Date(iso).getTime()) / 1000;
   if (d < 60) return "just now";
   if (d < 3600) return `${Math.floor(d / 60)} min ago`;

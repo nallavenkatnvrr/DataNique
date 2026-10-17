@@ -3,7 +3,7 @@
 TRUST MODEL
 -----------
 ``filter_sql`` (the per-side WHERE predicate on a table compare) is
-**interpolated directly** into generated SQL — it is NOT parameterized,
+**interpolated directly** into generated SQL - it is NOT parameterized,
 because it's a free-form boolean expression the user writes against columns
 we don't know ahead of time. It is therefore treated as **trusted input**:
 anyone who can set it already holds the connection's DB credentials and can
@@ -11,7 +11,7 @@ run arbitrary SQL through the SQL IDE anyway. In a single-user / trusted
 deployment this is by design.
 
 This module does NOT try to make ``filter_sql`` safe against a hostile
-author — that's impossible for a free-form predicate. What it DOES do is
+author - that's impossible for a free-form predicate. What it DOES do is
 catch the obvious "break out of the WHERE clause" shapes (stacked
 statements, comment-outs) so that in a *shared* deployment a filter can't
 trivially escalate into a second statement (``1=1; DROP TABLE ...``) or
@@ -37,8 +37,8 @@ def injection_reason(filter_sql: str | None) -> str | None:
     to escape its WHERE-clause context, else ``None``.
 
     Checks (after neutralizing quoted string literals):
-      * a ``;`` followed by more non-whitespace SQL — a stacked statement.
-      * a SQL line comment ``--`` or block comment ``/*`` — used to truncate
+      * a ``;`` followed by more non-whitespace SQL - a stacked statement.
+      * a SQL line comment ``--`` or block comment ``/*`` - used to truncate
         the remainder of the generated query.
     """
     if not filter_sql or not filter_sql.strip():

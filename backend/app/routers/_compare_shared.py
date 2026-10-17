@@ -23,7 +23,7 @@ def log_line(level: str, msg: str) -> str:
     The frontend's LogConsole assumes every log entry has ``ts`` (it
     formats with ``l.ts.slice(11,23)``). Engines set ts via their own
     log() helper, but the router's "engine X not installed / crashed"
-    branches emit logs directly — those must go through here so they
+    branches emit logs directly - those must go through here so they
     never crash LogConsole with a missing ts.
     """
     return json.dumps({
@@ -38,7 +38,7 @@ def _finite_safe(obj):
     """Recursively replace non-finite floats (NaN/Inf/-Inf) with None.
 
     Python's ``json.dumps`` emits bare ``NaN`` / ``Infinity`` tokens for
-    these — which are INVALID JSON. The browser's ``JSON.parse`` throws on
+    these - which are INVALID JSON. The browser's ``JSON.parse`` throws on
     them, so a single non-finite value (e.g. an ``AVG()`` column stat over
     all-null or overflowing data) silently drops the whole ``result`` line
     and the frontend Result tab never renders. Sanitize before dumping.
@@ -96,7 +96,7 @@ class NormalizeOptions(BaseModel):
     """Granular value-normalization toggles applied before hashing.
 
     Representation toggles (``numbers`` / ``timestamps`` / ``booleans``)
-    default ON — they remove pure cross-DB rendering artifacts that are
+    default ON - they remove pure cross-DB rendering artifacts that are
     never themselves a data issue. String-handling toggles default OFF
     because each can hide a REAL difference (trailing space, NULL vs '',
     case). See ``app.services.normalize.NormalizeOptions`` for semantics.
@@ -106,7 +106,7 @@ class NormalizeOptions(BaseModel):
     numbers: bool = True
     timestamps: bool = True
     booleans: bool = True
-    # string handling (default OFF — opt-in; each can mask a real diff)
+    # string handling (default OFF - opt-in; each can mask a real diff)
     rtrim: bool = False
     ltrim: bool = False
     case_insensitive: bool = False
@@ -139,7 +139,7 @@ class CompareRequest(BaseModel):
     spark_partitions: int = Field(default=4, ge=1, le=128)
     # Max rows to fetch from each side. 0 = use the engine's own default.
     max_rows: int = Field(default=0, ge=0, le=100_000_000)
-    # Normalize each column to a canonical string before hashing — kills
+    # Normalize each column to a canonical string before hashing - kills
     # false hash_diff from cross-DB type-cast artifacts. Cross-DB compares.
     # LEGACY single-boolean; superseded by `normalize`. Kept for back-compat
     # with saved templates / API callers (maps to representation+trim ON).
@@ -163,7 +163,7 @@ class CompareRequest(BaseModel):
     # concurrently in two threads. Helps for GIL-releasing fast paths
     # (Oracle Arrow / ConnectorX / Snowflake) but HURTS for the generic
     # pure-Python fetchmany path (GIL contention) and same-server compares.
-    # Default False — fetch sequentially.
+    # Default False - fetch sequentially.
     parallel_fetch: bool = False
 
     @field_validator("row_diff_buckets")
@@ -172,12 +172,12 @@ class CompareRequest(BaseModel):
         if value is None:
             return None
         if any(not re.fullmatch(r"[0-9a-fA-F]", bucket) for bucket in value):
-            raise ValueError("row_diff_buckets must contain hexadecimal bucket characters 0–9 and a–f")
+            raise ValueError("row_diff_buckets must contain hexadecimal bucket characters 0-9 and a-f")
         return [bucket.lower() for bucket in value]
 
 
 class StopRequest(BaseModel):
-    """Body for /stop. Both optional — a no-op if neither is given."""
+    """Body for /stop. Both optional - a no-op if neither is given."""
     source_connection_id: int | None = None
     target_connection_id: int | None = None
 

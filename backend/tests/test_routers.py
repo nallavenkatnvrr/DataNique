@@ -1,7 +1,7 @@
 """Router-level tests using FastAPI's TestClient against a temp SQLite DB.
 
 These exercise the HTTP surface end-to-end (routing, validation, serialization,
-persistence) WITHOUT touching any real database driver — every endpoint tested
+persistence) WITHOUT touching any real database driver - every endpoint tested
 here either works purely on the local SQLite store or fails BEFORE a DB
 connection is attempted (e.g. the filter_sql guard rejects at request-validation
 time).
@@ -178,7 +178,7 @@ def test_delete_connection(api_client):
 
 
 # --------------------------------------------------------------------------
-# Compare — filter_sql guard (rejects BEFORE any DB connection is made)
+# Compare - filter_sql guard (rejects BEFORE any DB connection is made)
 # --------------------------------------------------------------------------
 
 def _compare_payload(src_id: int, tgt_id: int, *, filter_source=None, filter_target=None) -> dict:
@@ -304,7 +304,7 @@ def test_excel_report_does_not_turn_sample_strings_into_formulas():
 
 
 # --------------------------------------------------------------------------
-# Compare /stop — pure eviction, no DB work
+# Compare /stop - pure eviction, no DB work
 # --------------------------------------------------------------------------
 
 def test_stop_compare_ok(api_client, monkeypatch):

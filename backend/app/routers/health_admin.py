@@ -2,17 +2,17 @@
 
 Three classes of endpoints:
 
-  1. ``GET /api/health/detailed`` — comprehensive state snapshot.
+  1. ``GET /api/health/detailed`` - comprehensive state snapshot.
      Shows cached connectors, background thread liveness, running
      query executions, and approximate resource use. Protected by the
      configured token gates because it includes SQL previews.
 
-  2. ``POST /api/admin/evict-connector/{conn_id}`` — manually drop
+  2. ``POST /api/admin/evict-connector/{conn_id}`` - manually drop
      cached connectors for a connection. Use when a connection is
      misbehaving and you want to force a fresh login on next use.
      Optional ``?purpose=X`` to drop just one section's slot.
 
-  3. ``POST /api/admin/kill-execution/{exec_id}`` — cancel a SQL
+  3. ``POST /api/admin/kill-execution/{exec_id}`` - cancel a SQL
      execution and force-evict its per-session connector if it is blocked.
 
 Privileged routes require ``DV_ADMIN_TOKEN`` when configured. Detailed health
@@ -40,9 +40,9 @@ def detailed_health() -> dict:
 
     Reports:
       - Process info (pid, uptime, thread count, memory if psutil installed)
-      - Background threads (heartbeat, watchdog, query workers) — alive?
-      - Cached connectors per (connection_id, purpose) — last ping, in-use
-      - Running query executions — sql preview, age
+      - Background threads (heartbeat, watchdog, query workers) - alive?
+      - Cached connectors per (connection_id, purpose) - last ping, in-use
+      - Running query executions - sql preview, age
       - Spark availability
     """
     # ---- Process info ----
@@ -51,7 +51,7 @@ def detailed_health() -> dict:
         "thread_count": threading.active_count(),
         "thread_names": sorted(set(t.name for t in threading.enumerate())),
     }
-    # psutil is optional — show memory if available, skip silently if not.
+    # psutil is optional - show memory if available, skip silently if not.
     try:
         import psutil  # type: ignore
         p = psutil.Process()

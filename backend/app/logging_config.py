@@ -3,13 +3,13 @@
 Additive and side-effect-free until explicitly called from ``main.py``:
 
 * :func:`configure_logging` installs a single, consistently-formatted stream
-  handler on the root logger (idempotent — safe to call more than once).
+  handler on the root logger (idempotent - safe to call more than once).
 * :func:`install_observability` wires a request-ID middleware and a global
   exception handler onto a FastAPI app so every unhandled error returns a
   clean JSON envelope (instead of a bare stack trace) and is logged with a
   correlation id the frontend can surface to the user.
 
-None of this changes existing endpoint behavior — successful responses pass
+None of this changes existing endpoint behavior - successful responses pass
 through untouched; only the *shape of unhandled 500s* and *log output* change.
 """
 from __future__ import annotations
@@ -56,7 +56,7 @@ def install_observability(app) -> None:
         start = time.perf_counter()
         try:
             response = await call_next(request)
-        except Exception:  # noqa: BLE001 — re-raised to the handler below
+        except Exception:  # noqa: BLE001 - re-raised to the handler below
             # Let the registered exception handler build the response so the
             # body shape is consistent; just log timing here.
             elapsed_ms = (time.perf_counter() - start) * 1000

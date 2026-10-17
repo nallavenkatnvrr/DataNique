@@ -1,7 +1,7 @@
 /**
  * Visual effects level. "auto" turns on light effects when the browser has no
  * graphics acceleration (software WebGL renderer: SwiftShader, llvmpipe,
- * "Microsoft Basic Render Driver" — typical for virtual desktops and remote
+ * "Microsoft Basic Render Driver" - typical for virtual desktops and remote
  * sessions), where shadows and transitions make the UI feel slow.
  */
 export type EffectsPref = "auto" | "full" | "lite";

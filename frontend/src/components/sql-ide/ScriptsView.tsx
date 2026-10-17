@@ -57,7 +57,7 @@ export function ScriptsView(props: Props) {
                 "flex w-full items-center gap-1.5 py-1 pl-6 pr-2 text-left text-xs hover:bg-accent/60",
                 t.id === activeTabId && "bg-accent",
               )}
-              title={`${t.name} — ${connName(t.connectionId)}`}
+              title={`${t.name} - ${connName(t.connectionId)}`}
             >
               <FileCode2 className="h-3.5 w-3.5 shrink-0 text-primary/80" />
               <span className="min-w-0 flex-1 truncate">{t.name}</span>
@@ -199,7 +199,7 @@ function ConnectionScripts({
             versions.isLoading
               ? [{ kind: "heading", label: "Loading versions…" }]
               : [
-                  { kind: "heading", label: `${versionsFor.name} — versions` },
+                  { kind: "heading", label: `${versionsFor.name} - versions` },
                   { label: "Current version", onSelect: () => onOpen(versionsFor.name) },
                   ...(versions.data ?? []).map((v) => ({
                     label: (

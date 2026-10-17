@@ -42,7 +42,7 @@ export function StatusBar({
     >
       {conn ? (
         <>
-          <span className="flex items-center gap-1.5 font-medium" title={`${conn.name} — ${conn.host ?? ""}`}>
+          <span className="flex items-center gap-1.5 font-medium" title={`${conn.name} - ${conn.host ?? ""}`}>
             {prod ? <ShieldAlert className="h-3 w-3" /> : <CircleDot className="h-3 w-3 text-success" />}
             {conn.name}
             {prod && <span className="rounded bg-white/20 px-1 text-[9px] font-bold uppercase tracking-wider">Production</span>}
@@ -86,7 +86,7 @@ export function StatusBar({
           </span>
           {cursor.statementCount > 0 && (
             <span className="tabular-nums" title="Statement under the cursor / statements in the script">
-              Stmt {cursor.statementIndex != null ? cursor.statementIndex + 1 : "–"}/{cursor.statementCount}
+              Stmt {cursor.statementIndex != null ? cursor.statementIndex + 1 : "-"}/{cursor.statementCount}
             </span>
           )}
         </>

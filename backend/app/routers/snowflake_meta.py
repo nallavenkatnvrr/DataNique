@@ -6,23 +6,23 @@ This router exposes the same lists so the SQL IDE can offer the same UX.
 
 The endpoints are deliberately namespaced under
 ``/api/connections/{id}/snowflake/`` so they don't clash with the generic
-``/databases`` / ``/schemas`` endpoints in ``metadata.py`` — those work
+``/databases`` / ``/schemas`` endpoints in ``metadata.py`` - those work
 for every connector, while these only make sense for Snowflake.
 
 Important privilege note: Snowflake's SHOW commands are filtered by
 your active role's grants:
-  - SHOW WAREHOUSES — only warehouses with USAGE granted to your role
-  - SHOW ROLES      — only roles granted to your user
-  - SHOW DATABASES  — only databases with USAGE granted to your role
-  - SHOW SCHEMAS    — only schemas with USAGE granted to your role
+  - SHOW WAREHOUSES - only warehouses with USAGE granted to your role
+  - SHOW ROLES      - only roles granted to your user
+  - SHOW DATABASES  - only databases with USAGE granted to your role
+  - SHOW SCHEMAS    - only schemas with USAGE granted to your role
 So if you "only see warehouses with my username in them", it's because
-those are the only ones your account has access to — not a bug here.
+those are the only ones your account has access to - not a bug here.
 
 Timing model (phase 4.18):
-  - WARM-UP step has its own 90s budget — covers the FIRST SSO browser
+  - WARM-UP step has its own 90s budget - covers the FIRST SSO browser
     handshake or token-cache refresh that a freshly-created "metadata"
     purpose connector (introduced in phase 4.16) needs to perform.
-  - Once warm, SHOW queries run sequentially with 10s each — they're
+  - Once warm, SHOW queries run sequentially with 10s each - they're
     sub-second on a warm connection.
   - On warm-up timeout, the user sees a CLEAR error saying "Snowflake
     login did not complete in 90s; check for a hidden browser popup",
@@ -108,7 +108,7 @@ def _warm_up_connection(connector, budget_s: int = _WARMUP_TIMEOUT_S) -> tuple[b
     warm connector this returns in ~10ms.
 
     Returns (ok, error_message, elapsed_ms). Times out cleanly at the
-    budget — no perpetual hang.
+    budget - no perpetual hang.
     """
     t0 = time.perf_counter()
     log.info("[snowflake-meta] Warming up connector (budget=%ds)...", budget_s)
@@ -125,7 +125,7 @@ def _warm_up_connection(connector, budget_s: int = _WARMUP_TIMEOUT_S) -> tuple[b
         msg = (
             f"Snowflake login did not complete within {budget_s}s. "
             f"For SSO (externalbrowser): a browser popup may have opened "
-            f"on the backend machine but is hidden or was dismissed — "
+            f"on the backend machine but is hidden or was dismissed - "
             f"check the backend console for a Snowflake login URL, or "
             f"look for an open browser window. "
             f"For password/OAuth: check credentials and account URL."
@@ -145,18 +145,18 @@ def get_snowflake_context(conn_id: int, database: str | None = None) -> dict:
 
     Two-phase execution:
 
-    1. WARM-UP (up to 90s) — forces the connector to complete its login
+    1. WARM-UP (up to 90s) - forces the connector to complete its login
        cycle. This is where SSO popups happen on first call to a new
        section-scoped slot.
 
-    2. SHOW queries (10s each, sequential) — only run if warm-up
+    2. SHOW queries (10s each, sequential) - only run if warm-up
        succeeded. They share the connector's lock so parallel dispatch
        wouldn't help anyway.
 
     Each step's result is reported separately in ``diagnostics`` so the
     frontend can show "Warming up..." vs "Querying lists..." vs the
     final result. If warm-up fails, the lists are returned empty with
-    a clear error explaining the SSO/login situation — no perpetual
+    a clear error explaining the SSO/login situation - no perpetual
     "Loading..." spinner.
 
     Privilege filtering is Snowflake's own: SHOW WAREHOUSES returns only
@@ -173,14 +173,14 @@ def get_snowflake_context(conn_id: int, database: str | None = None) -> dict:
     warm_ok, warm_err, warm_ms = _warm_up_connection(connector)
 
     if not warm_ok:
-        # The connector is wedged — almost always because a previous
+        # The connector is wedged - almost always because a previous
         # query (typically SHOW WAREHOUSES) is stuck inside the
         # snowflake driver, holding the connector's lock. Auto-evict
         # with force=True so the next call gets a fresh connector.
         # This is the escape hatch for the driver-level deadlock that
         # phases 4.17-4.19 left the user stuck inside.
         log.warning(
-            "[snowflake-meta] Warm-up failed — force-evicting wedged 'metadata' "
+            "[snowflake-meta] Warm-up failed - force-evicting wedged 'metadata' "
             "connector so the next call starts fresh. (conn_id=%s)", conn_id,
         )
         try:
@@ -189,7 +189,7 @@ def get_snowflake_context(conn_id: int, database: str | None = None) -> dict:
         except Exception as exc:
             log.warning("[snowflake-meta] Force-evict failed: %s", exc)
 
-        # Don't even attempt SHOW queries — they'd hit the same lock.
+        # Don't even attempt SHOW queries - they'd hit the same lock.
         # Tell the user clearly: a previous query is stuck, NOT that
         # SSO failed. The connector has been evicted; tell them to
         # retry.
@@ -209,12 +209,12 @@ def get_snowflake_context(conn_id: int, database: str | None = None) -> dict:
             # The frontend can auto-retry once when it sees this.
             "evicted_and_ready_for_retry": True,
             "note": (
-                "The Snowflake metadata connection got wedged — most likely a "
+                "The Snowflake metadata connection got wedged - most likely a "
                 "previous SHOW query hung inside the driver. The connector has "
                 "been force-evicted and the next call will start fresh. Click "
                 "refresh once and the lists should populate. If it wedges "
                 "AGAIN, your role's SHOW WAREHOUSES is timing out at the "
-                "Snowflake server — try changing role to one with simpler "
+                "Snowflake server - try changing role to one with simpler "
                 "warehouse grants (or SYSADMIN if available)."
             ),
         }
@@ -247,13 +247,13 @@ def get_snowflake_context(conn_id: int, database: str | None = None) -> dict:
                 "error": (
                     f"SHOW {label.upper()} timed out after {_PER_SHOW_TIMEOUT_S}s. "
                     f"The Snowflake server is taking unusually long for this "
-                    f"command — possibly your role's grants make the result "
+                    f"command - possibly your role's grants make the result "
                     f"set very large, or there's a Snowflake-side hang. The "
                     f"connector has been evicted; click refresh to retry."
                 ),
                 "elapsed_ms": _PER_SHOW_TIMEOUT_S * 1000,
             }
-            log.warning("[snowflake-meta] SHOW %s TIMED OUT — will force-evict connector", label)
+            log.warning("[snowflake-meta] SHOW %s TIMED OUT - will force-evict connector", label)
         except Exception as exc:
             results[label] = {
                 "ok": False, "data": [],
@@ -273,7 +273,7 @@ def get_snowflake_context(conn_id: int, database: str | None = None) -> dict:
         except Exception as exc:
             log.warning("[snowflake-meta] Force-evict failed: %s", exc)
 
-    # Current session context — quick query on warm connection
+    # Current session context - quick query on warm connection
     try:
         t0 = time.perf_counter()
         future = _META_POOL.submit(
@@ -318,7 +318,7 @@ def get_snowflake_context(conn_id: int, database: str | None = None) -> dict:
         "note": (
             "Snowflake's SHOW commands filter by your active role's grants. "
             "If a list is empty or shorter than expected, your role likely "
-            "lacks USAGE on the others — switch to a more privileged role "
+            "lacks USAGE on the others - switch to a more privileged role "
             "(e.g. SYSADMIN) and click refresh."
         ),
     }
@@ -343,7 +343,7 @@ def diagnose_snowflake(conn_id: int) -> dict:
       7. CURRENT_* context
 
     Each step records: ok, elapsed_ms, error (if any). Returns ALL
-    steps' results, even if early steps failed — so you see the
+    steps' results, even if early steps failed - so you see the
     cascade.
     """
     steps: list[dict] = []

@@ -1,4 +1,4 @@
-"""Saved SQL scripts API — per-connection workspaces with on-disk versioning."""
+"""Saved SQL scripts API - per-connection workspaces with on-disk versioning."""
 from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException

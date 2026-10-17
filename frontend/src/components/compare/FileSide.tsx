@@ -108,7 +108,7 @@ export function FileSide({ value, onChange }: { value: SideSpec; onChange: (s: S
               className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-medium text-primary-foreground disabled:opacity-50">
               <Plus className="h-3.5 w-3.5" /> Use this path
             </button>
-            <p className="text-xs text-muted-foreground">Reading in place skips the upload — best for large files.</p>
+            <p className="text-xs text-muted-foreground">Reading in place skips the upload - best for large files.</p>
           </div>
         )}
         <FileBrowser open={browse} onClose={() => setBrowse(false)} onPick={(p) => { setBrowse(false); setPathDraft(p); onChange({ kind: "file", path: p, options: {} }); }} />
@@ -201,7 +201,7 @@ export function FileSide({ value, onChange }: { value: SideSpec; onChange: (s: S
 function FixedColumns({ value, onChange }: { value: { name: string; width: number }[]; onChange: (v: { name: string; width: number }[]) => void }) {
   const [text, setText] = React.useState(value.map((c) => `${c.name}:${c.width}`).join(", "));
   return (
-    <Field label="Columns (name:width, …)" hint="e.g. id:8, code:10, name:30 — fields are trimmed">
+    <Field label="Columns (name:width, …)" hint="e.g. id:8, code:10, name:30 - fields are trimmed">
       <input className="dv-input font-mono text-xs" value={text} onChange={(e) => setText(e.target.value)}
         onBlur={() => onChange(text.split(",").map((p) => p.trim()).filter(Boolean).map((p) => {
           const [n, w] = p.split(":");

@@ -254,7 +254,7 @@ export const ResultGrid = React.memo(function ResultGrid({
     if (el.scrollHeight - el.scrollTop - el.clientHeight < rowHeight * 12) onLoadMore();
   }, [hasMore, loadingMore, filtered, onLoadMore, rowHeight]);
 
-  // Short results never scroll — keep paging until the viewport is filled.
+  // Short results never scroll - keep paging until the viewport is filled.
   React.useEffect(() => {
     onScroll();
   }, [rows.length, onScroll]);
@@ -478,7 +478,7 @@ export const ResultGrid = React.memo(function ResultGrid({
       },
       {
         label: "SQL IN list",
-        title: "('a', 'b', 'c') — distinct selected values",
+        title: "('a', 'b', 'c') - distinct selected values",
         onSelect: () => void copy(`(${colVals().map(sqlLiteral).join(", ")})`, "Copied IN list"),
       },
       {

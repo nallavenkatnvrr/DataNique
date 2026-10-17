@@ -81,7 +81,7 @@ class _Formats:
                                           "font_color": "#991b1b", "align": "center", "border": 1})
         self.match_warn  = wb.add_format({"bold": True, "bg_color": "#fef3c7",
                                           "font_color": "#92400e", "align": "center", "border": 1})
-        # Neutral grey "informational" — used for diagnostic-only fields
+        # Neutral grey "informational" - used for diagnostic-only fields
         # that aren't part of the match verdict (e.g. Min/Max hash, which
         # converge to deterministic extremes on large tables regardless
         # of content).
@@ -302,7 +302,7 @@ def _write_fingerprint(wb, f: _Formats, r: dict) -> None:
     ws.write_row(row, 0, ["Metric", "Source", "Target", "Match"], f.header); row += 1
     # Row count is part of the match decision. Min/Max hash are NOT
     # (they converge to 0x00.../0xff... on large tables regardless of
-    # content) — render them as INFO with a grey italic indicator so
+    # content) - render them as INFO with a grey italic indicator so
     # the report no longer implies they vote on MATCH/MISMATCH.
     METRICS = [
         ("Row count", "row_count", False),    # informational=False -> green/red
@@ -327,7 +327,7 @@ def _write_fingerprint(wb, f: _Formats, r: dict) -> None:
         row += 1
     # Brief note explaining the INFO rows
     ws.write(row, 0,
-             "Min/Max hash are diagnostic only — for large tables they always "
+             "Min/Max hash are diagnostic only - for large tables they always "
              "converge to 00.../ff... and are NOT used to determine MATCH.",
              f.subtitle)
     row += 2

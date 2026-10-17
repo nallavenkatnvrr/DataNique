@@ -69,7 +69,7 @@ export function ConnectionsPage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-medium">{c.name}</div>
-                    <div className="truncate text-xs text-muted-foreground">{LABELS[c.db_type]} · {c.host || (c.extra as any)?.account || "—"}{c.port ? `:${c.port}` : ""}</div>
+                    <div className="truncate text-xs text-muted-foreground">{LABELS[c.db_type]} · {c.host || (c.extra as any)?.account || "-"}{c.port ? `:${c.port}` : ""}</div>
                     <div className="mt-0.5 truncate font-mono text-[11px] text-muted-foreground">{[c.database, c.schema_name].filter(Boolean).join(" / ") || "default database"}{c.username ? ` · ${c.username}` : ""}</div>
                   </div>
                   {!c.has_password && <span title="No saved password" className="text-changed"><KeyRound className="h-4 w-4" /></span>}

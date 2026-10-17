@@ -262,8 +262,8 @@ function StatsTab({ stats }: { stats: any[] }) {
                 const same = String(a) === String(b);
                 return (
                   <td key={k} className="max-w-[220px] px-2 py-2 font-mono">
-                    <div className="truncate text-only-src" title={String(a ?? "")}>{a ?? "—"}</div>
-                    {!same && <div className="truncate text-only-tgt" title={String(b ?? "")}>{b ?? "—"}</div>}
+                    <div className="truncate text-only-src" title={String(a ?? "")}>{a ?? "-"}</div>
+                    {!same && <div className="truncate text-only-tgt" title={String(b ?? "")}>{b ?? "-"}</div>}
                   </td>
                 );
               })}

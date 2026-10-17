@@ -2,7 +2,7 @@
   "name": "datanique-desktop",
   "productName": "Datanique",
   "version": "0.1.0",
-  "description": "Datanique — cross-database data validation & SQL IDE, as a native desktop app.",
+  "description": "Datanique - cross-database data validation & SQL IDE, as a native desktop app.",
   "author": "Datanique",
   "license": "MIT",
   "main": "main.js",

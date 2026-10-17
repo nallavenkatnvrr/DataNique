@@ -110,7 +110,7 @@ export function uid(prefix = "t"): string {
   return `${prefix}${seq.toString(36)}${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
 }
 
-/** FNV-1a 32-bit — cheap content fingerprint for dirty tracking. */
+/** FNV-1a 32-bit - cheap content fingerprint for dirty tracking. */
 export function hashText(s: string): string {
   let h = 0x811c9dc5;
   for (let i = 0; i < s.length; i++) {
@@ -277,7 +277,7 @@ function persistNow(s: IdeState) {
     };
     localStorage.setItem(KEY, JSON.stringify(data));
   } catch {
-    /* quota / private mode — keep working in memory */
+    /* quota / private mode - keep working in memory */
   }
 }
 
@@ -291,7 +291,7 @@ let persistTimer: ReturnType<typeof setTimeout> | null = null;
 let lastPersistedKey = "";
 
 function persistKey(s: IdeState): string {
-  // Only fields that are persisted — result churn while polling doesn't
+  // Only fields that are persisted - result churn while polling doesn't
   // trigger localStorage writes.
   let k = s.activeTabId;
   for (const t of s.tabs) {

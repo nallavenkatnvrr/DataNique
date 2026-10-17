@@ -143,7 +143,7 @@ def main() -> None:
             f"[datanique] Frontend build not found at {frontend_dist}.\n"
             f"            Run `npm run build` in the frontend folder first."
         )
-        # Still launch — the backend serves the API; the window will show a
+        # Still launch - the backend serves the API; the window will show a
         # helpful message from the SPA fallback only if a build exists.
 
     port = _free_port()

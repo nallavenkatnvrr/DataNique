@@ -1,6 +1,6 @@
 """User-configurable app settings persisted to a small JSON file.
 
-These are runtime preferences the user can change from the Settings page —
+These are runtime preferences the user can change from the Settings page -
 distinct from the environment-driven ``app.config.Settings`` (which holds
 deployment/immutable config). Right now this stores the on-disk locations for
 saved SQL scripts and exported files so the user can keep everything in one

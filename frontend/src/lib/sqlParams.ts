@@ -1,7 +1,7 @@
 /**
  * Script variables and named parameters (DBeaver "SQL parameters"):
- *   ${name}  — variable, always recognised
- *   :name    — named parameter (optional; off for statements that create
+ *   ${name}  - variable, always recognised
+ *   :name    - named parameter (optional; off for statements that create
  *              triggers/procedures, where :new / :old are real syntax)
  *
  * Occurrences inside string literals, quoted identifiers, comments and

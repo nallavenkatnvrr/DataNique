@@ -108,7 +108,7 @@ def _format_server(host: str, port: int | None) -> str:
 
     SQL Server named instances (HOST\\INSTANCE) use dynamic ports
     resolved by the SQL Server Browser service on UDP/1434. Appending
-    ``,port`` to a named instance is WRONG — the driver bypasses the
+    ``,port`` to a named instance is WRONG - the driver bypasses the
     Browser lookup and tries to connect to that fixed port instead,
     which usually fails or connects to the wrong instance.
 
@@ -174,7 +174,7 @@ class SqlServerConnector(Connector):
             f"TrustServerCertificate={trust_cert}",
             f"Connection Timeout={connect_timeout}",
             # Max TDS packet size (default 4096). 32767 = 8x fewer network
-            # round-trips for large data transfers — the single biggest
+            # round-trips for large data transfers - the single biggest
             # throughput improvement for SQL Server bulk reads.
             "PacketSize=32767",
         ]
@@ -251,7 +251,7 @@ class SqlServerConnector(Connector):
             conn = pyodbc.connect(conn_str, autocommit=True, timeout=connect_timeout)
         except pyodbc.InterfaceError as exc:
             # IM002 = "Data source name not found and no default driver
-            # specified" — almost always means the named driver isn't
+            # specified" - almost always means the named driver isn't
             # actually installed.
             msg = str(exc)
             if "IM002" in msg:

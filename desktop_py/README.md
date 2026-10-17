@@ -4,7 +4,7 @@ A native desktop build of Datanique that works on **locked-down corporate
 networks** where Electron cannot be installed (its prebuilt binary download
 from GitHub is blocked).
 
-Instead of Electron, this uses **[pywebview]** — a small Python package that
+Instead of Electron, this uses **[pywebview]** - a small Python package that
 renders the UI in the **WebView2 runtime already built into Windows 10/11**.
 Everything installs from **PyPI** (reachable via your corporate proxy), with
 **no GitHub binary downloads**.
@@ -31,7 +31,7 @@ desktop_py/app.py
 ```
 
 Because the UI is served **same-origin** by the backend, the app's relative
-`/api` calls and `BrowserRouter` work unchanged — no `__API_BASE__` / HashRouter
+`/api` calls and `BrowserRouter` work unchanged - no `__API_BASE__` / HashRouter
 needed (those remain only for the Electron variant).
 
 The DB + encryption key are stored under `%APPDATA%\Datanique\backend-data` via
@@ -123,7 +123,7 @@ with an installer (Inno Setup / NSIS) if you want Start-Menu shortcuts.
 pywebview has no built-in updater (unlike electron-updater). Recommended path:
 
 - **Now (local):** distribute the built folder / installer manually.
-- **Later (internet):** add a lightweight check on startup — the app calls a
+- **Later (internet):** add a lightweight check on startup - the app calls a
   version endpoint (GitHub Releases API or an S3 `latest.json`), and if a newer
   build exists, downloads the new installer and launches it. This is ~40 lines
   and can be added when the GitHub/S3 hosting is decided.

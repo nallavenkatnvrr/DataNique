@@ -43,14 +43,14 @@ nsis:
 # Auto-update feed.
 #
 # NOW (local machine): the "generic" provider points at a folder served over
-# HTTP on this machine. Build with `npm run publish` — electron-builder writes
+# HTTP on this machine. Build with `npm run publish` - electron-builder writes
 # the installer + `latest.yml` into ./dist. Serve ./dist over HTTP so the URL
 # below resolves, e.g. from the desktop/dist folder:
 #     npx --yes http-server -p 8080 .
 # Then set DATANIQUE feed url to http://127.0.0.1:8080/.
 #
 # LATER (internet): switch `provider` to `github` (owner/repo) or `s3`
-# (bucket/region) — only this block changes; main.js needs no edits.
+# (bucket/region) - only this block changes; main.js needs no edits.
 # ---------------------------------------------------------------------------
 publish:
   - provider: generic

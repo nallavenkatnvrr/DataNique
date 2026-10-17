@@ -1,4 +1,4 @@
-# SQL IDE redesign — changelog
+# SQL IDE redesign - changelog
 
 Date: 16 Oct 2026. Scope: the SQL IDE page (layout, editor, results, explorer,
 history), its backend session/execution service, the pywebview desktop shell,

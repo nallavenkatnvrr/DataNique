@@ -50,7 +50,7 @@ export class ErrorBoundary extends React.Component<
               <div className="flex-1 min-w-0">
                 <h1 className="text-2xl font-bold mb-1">Something went wrong</h1>
                 <p className="text-sm text-muted-foreground mb-4">
-                  An unexpected error occurred in the UI. Your data is safe — only the rendering failed.
+                  An unexpected error occurred in the UI. Your data is safe - only the rendering failed.
                 </p>
                 <details className="mb-4">
                   <summary className="text-sm font-medium cursor-pointer hover:underline">

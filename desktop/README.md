@@ -4,7 +4,7 @@ Native Windows desktop build of Datanique (Electron shell) that bundles the
 existing React UI and the FastAPI backend into one installable app with
 **auto-updates over the internet**.
 
-Nothing in the web app is duplicated — the desktop shell reuses:
+Nothing in the web app is duplicated - the desktop shell reuses:
 - the **React UI** from `../frontend` (built with Vite),
 - the **FastAPI backend** from `../backend` (frozen with PyInstaller).
 
@@ -12,7 +12,7 @@ Nothing in the web app is duplicated — the desktop shell reuses:
 
 ```
 Electron main.js
-  ├─ picks a free loopback port (8123–8299)
+  ├─ picks a free loopback port (8123-8299)
   ├─ spawns the backend:
   │     dev  → ..\backend\.venv\Scripts\python.exe run_server.py
   │     prod → resources\backend\datanique-backend.exe   (frozen)
@@ -37,7 +37,7 @@ Already present on this machine: **Node.js** (v24), **Python 3.12** (in
 # 1. PyInstaller in the backend venv (freezes the backend to an .exe)
 ..\backend\.venv\Scripts\python.exe -m pip install pyinstaller
 
-# 2. Electron toolchain (local to this folder — no global/system install)
+# 2. Electron toolchain (local to this folder - no global/system install)
 npm install
 ```
 
@@ -48,10 +48,10 @@ auto-update still works.)
 ## Develop (fast loop, no packaging)
 
 ```powershell
-# Terminal A — Vite dev server
+# Terminal A - Vite dev server
 cd ..\frontend; npm run dev            # http://localhost:5173
 
-# Terminal B — Electron pointing at Vite + reusing a running backend
+# Terminal B - Electron pointing at Vite + reusing a running backend
 $env:DATANIQUE_DEV = "1"
 $env:DATANIQUE_VITE_URL = "http://localhost:5173"
 npm run dev
@@ -73,7 +73,7 @@ The script: freezes the backend → builds the UI → stages both into
 
 ## Auto-update
 
-### Now — local machine
+### Now - local machine
 
 `electron-builder.yml` uses the **generic** provider at
 `http://127.0.0.1:8080/`. To test the update flow locally:
@@ -92,7 +92,7 @@ cd dist; npx --yes http-server -p 8080 .
 
 The published feed contents (`latest.yml` + `*.exe`) are what a real host serves.
 
-### Later — internet (GitHub / AWS S3)
+### Later - internet (GitHub / AWS S3)
 
 Only the `publish:` block in `electron-builder.yml` changes; `main.js` is
 provider-agnostic:

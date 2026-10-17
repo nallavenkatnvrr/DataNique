@@ -1,5 +1,5 @@
 // Run with: npm test   (node --experimental-strip-types --test)
-// Shared cases with backend/tests/test_sql_split.py — keep both in sync.
+// Shared cases with backend/tests/test_sql_split.py - keep both in sync.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { splitSqlStatements, statementAt, isModifyingStatement, lineOf } from "./sqlSplit.ts";

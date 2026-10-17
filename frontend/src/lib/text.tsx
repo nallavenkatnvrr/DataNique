@@ -3,8 +3,8 @@ import * as React from "react";
 // ---------------------------------------------------------------------------
 // Control character visualization (phase 4.36)
 //
-// SQL Server / Oracle / etc. legitimately store non-printable bytes — NUL
-// (0x00), CR (0x0D), TAB (0x09), and so on — inside VARCHAR columns. The
+// SQL Server / Oracle / etc. legitimately store non-printable bytes - NUL
+// (0x00), CR (0x0D), TAB (0x09), and so on - inside VARCHAR columns. The
 // data is real; the bytes matter for downstream consumers; but the UI
 // renders them as nothing visible. That makes diffs in the Visual Diff
 // panel look broken: cells are highlighted as different but the user
@@ -24,7 +24,7 @@ const CONTROL_CHAR_RE = /[\x00-\x1F\x7F]/;
 
 function controlCharLabel(code: number): string {
   // Use the standard ASCII control-char mnemonics. They're widely
-  // recognized — anyone who's dealt with raw text streams knows what
+  // recognized - anyone who's dealt with raw text streams knows what
   // NUL/CR/LF/TAB/etc. mean.
   switch (code) {
     case 0x00: return "NUL";

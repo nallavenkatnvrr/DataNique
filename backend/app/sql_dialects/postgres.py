@@ -6,7 +6,7 @@ from app.sql_dialects.base import SqlDialect
 class PostgresDialect(SqlDialect):
     name = "postgres"
     supports_checksum_bucketing = True
-    # A Postgres connection is bound to a single database — you cannot join a
+    # A Postgres connection is bound to a single database - you cannot join a
     # table in another database within one query. So when source/target live
     # in different databases the engine must use the cross-DB sort-merge path.
     supports_cross_database_join = False

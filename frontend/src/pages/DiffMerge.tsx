@@ -275,7 +275,7 @@ function renderWhitespace(text: string): React.ReactNode {
 /** Strip SQL comments: line comments starting with two dashes, and
  *  block comments delimited by slash-star ... star-slash. Newlines
  *  are preserved so line numbers stay aligned with the original.
- *  String literals are left alone — we don't strip comments inside quotes. */
+ *  String literals are left alone - we don't strip comments inside quotes. */
 function stripSqlComments(text: string): string {
   let out = "";
   let i = 0;
@@ -317,7 +317,7 @@ function stripSqlComments(text: string): string {
   return out;
 }
 
-/** SQL reserved keywords (subset — covers the common ones used in dialect-agnostic SQL). */
+/** SQL reserved keywords (subset - covers the common ones used in dialect-agnostic SQL). */
 const SQL_KEYWORDS = new Set([
   "SELECT","FROM","WHERE","AND","OR","NOT","IN","IS","NULL","LIKE","BETWEEN",
   "INSERT","INTO","VALUES","UPDATE","SET","DELETE","CREATE","TABLE","VIEW",
@@ -343,7 +343,7 @@ function normalizeSqlKeywords(text: string): string {
   });
 }
 
-/** Strip blank lines (consisting only of whitespace) — returns the same
+/** Strip blank lines (consisting only of whitespace) - returns the same
  *  text without those lines. Affects line numbering on purpose. */
 function stripBlankLines(text: string): string {
   return text.split("\n").filter((ln) => ln.trim().length > 0).join("\n");
@@ -454,7 +454,7 @@ function escapeHtml(s: string): string {
 
 // ---------------------------------------------------------------------------
 // SQL IDE tab loader (reads from localStorage so the user can compare
-// against any script they have open in the IDE — no copy-paste needed)
+// against any script they have open in the IDE - no copy-paste needed)
 // ---------------------------------------------------------------------------
 
 interface IdeScript { id: string; name: string; sql: string }
@@ -785,7 +785,7 @@ export function DiffMergePage() {
       return true;
     };
     // When filtering by a specific change type, ignore hunk-context and
-    // show exactly the matching rows (no separators — they don't add
+    // show exactly the matching rows (no separators - they don't add
     // info when we're already filtering).
     if (changeFilter !== "all") {
       return diff.filter(filterFn);
@@ -893,7 +893,7 @@ export function DiffMergePage() {
               <ArrowUp className="h-3 w-3" />
             </Button>
             <span className="text-[10px] text-muted-foreground tabular-nums w-12 text-center">
-              {currentHunkIdx >= 0 ? currentHunkIdx + 1 : "—"}/{hunks.length}
+              {currentHunkIdx >= 0 ? currentHunkIdx + 1 : "-"}/{hunks.length}
             </span>
             <Button size="sm" variant="ghost" className="h-7 text-xs px-1.5" onClick={nextDiff} title="Next diff (F7)">
               <ArrowDown className="h-3 w-3" />
@@ -980,7 +980,7 @@ export function DiffMergePage() {
             <input type="checkbox" checked={ignoreBlankLines} onChange={(e) => setIgnoreBlankLines(e.target.checked)} className="h-3 w-3" />
             Blank lines
           </label>
-          {/* SQL-aware options — visually grouped */}
+          {/* SQL-aware options - visually grouped */}
           <div className="flex items-center gap-1 text-[11px] border-l pl-2">
             <Code2 className="h-3 w-3 text-cyan-500" />
             <label className="flex items-center gap-1 cursor-pointer" title="Strip SQL line and block comments (-- and /* */) before comparing">
@@ -1095,7 +1095,7 @@ export function DiffMergePage() {
         <div className="flex-1 min-h-0 flex">
           {/* Diff content */}
           <div className="flex-1 flex flex-col min-w-0">
-            {/* Column headers — same for both views, layout differs */}
+            {/* Column headers - same for both views, layout differs */}
             {viewMode === "split" ? (
               <div className="flex items-center border-b text-xs shrink-0">
                 <div className="flex-1 px-3 py-1 bg-red-50/50 font-medium truncate border-r flex items-center gap-1">
@@ -1323,7 +1323,7 @@ function LoadButtonGroup({
           {ideScripts.length === 0 ? (
             <div className="px-3 py-3 text-muted-foreground text-[11px]">
               No saved SQL IDE scripts found. Open the SQL IDE and type into
-              a tab — it auto-saves to local storage.
+              a tab - it auto-saves to local storage.
             </div>
           ) : (
             ideScripts.map((s) => (
@@ -1514,7 +1514,7 @@ function Minimap({ data, scrollRef }: { data: string[]; scrollRef: React.RefObje
     <div
       className="w-[14px] shrink-0 border-l bg-muted/30 cursor-pointer"
       onClick={handleClick}
-      title="Click to scroll — colors show diff locations"
+      title="Click to scroll - colors show diff locations"
     >
       <canvas ref={canvasRef} style={{ width, height: "100%" }} />
     </div>

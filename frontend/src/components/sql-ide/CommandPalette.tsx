@@ -1,5 +1,5 @@
 /**
- * Command palette (Ctrl+Shift+P / F1) — every IDE command with its shortcut,
+ * Command palette (Ctrl+Shift+P / F1) - every IDE command with its shortcut,
  * plus "go to script" and "switch connection" entries. Fuzzy matched.
  */
 import * as React from "react";

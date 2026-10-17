@@ -16,7 +16,7 @@ from app.security.crypto import encrypt
 router = APIRouter(prefix="/api/connections", tags=["connections"])
 
 
-# Dedicated pool for "Test connection" — keep separate from the engines so
+# Dedicated pool for "Test connection" - keep separate from the engines so
 # a stuck DB driver can never starve the run-compare side. Daemon threads
 # so the process can exit cleanly even if a driver is blocked in a kernel
 # socket call.
@@ -38,7 +38,7 @@ def _run_test_with_timeout(connector, timeout_s: int) -> dict:
         return future.result(timeout=timeout_s)
     except concurrent.futures.TimeoutError:
         # Future is still running but the network call is hung. Don't
-        # try to cancel — Python can't interrupt a syscall mid-flight.
+        # try to cancel - Python can't interrupt a syscall mid-flight.
         # The worker thread will eventually error out and be reclaimed.
         raise TimeoutError(
             f"Connection test exceeded {timeout_s}s timeout. The DB host may be "
@@ -200,7 +200,7 @@ def test_connection(conn_id: int) -> dict:
             return {"ok": True, **res}
         except Exception as exc:
             # If the test failed (or timed out), the cached connection
-            # (if any) is likely bad — evict so the next attempt rebuilds
+            # (if any) is likely bad - evict so the next attempt rebuilds
             # from scratch with a fresh socket.
             # Only the test slot: running compares and IDE sessions keep theirs.
             connector_factory.evict_connector(conn_id, purpose="test")

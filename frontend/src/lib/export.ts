@@ -35,7 +35,7 @@ export function toJson(columns: string[], rows: any[][], pretty = true): string 
 }
 
 export function toTsv(columns: string[], rows: any[][]): string {
-  // Tab-separated, simple — for pasting into Excel/Sheets.
+  // Tab-separated, simple - for pasting into Excel/Sheets.
   const escape = (v: any) => {
     if (v === null || v === undefined) return "";
     const text = String(v).replace(/\t/g, " ").replace(/\n/g, " ").replace(/\r/g, "");
@@ -46,7 +46,7 @@ export function toTsv(columns: string[], rows: any[][]): string {
   return body ? `${header}\n${body}` : header;
 }
 
-/** GitHub-flavored Markdown table — handy for pasting into docs/PRs/tickets. */
+/** GitHub-flavored Markdown table - handy for pasting into docs/PRs/tickets. */
 export function toMarkdown(columns: string[], rows: any[][]): string {
   const esc = (v: any) =>
     v === null || v === undefined
@@ -65,7 +65,7 @@ function sqlLiteral(v: any): string {
   return `'${String(v).replace(/'/g, "''")}'`;
 }
 
-/** INSERT statements — one per row. DBeaver "Copy as SQL / INSERT" equivalent. */
+/** INSERT statements - one per row. DBeaver "Copy as SQL / INSERT" equivalent. */
 export function toInsert(columns: string[], rows: any[][], table = "table"): string {
   const cols = columns.join(", ");
   return rows
@@ -89,7 +89,7 @@ export function downloadBlob(content: string, filename: string, mime = "text/pla
 /**
  * Fetch a binary endpoint (e.g. an Excel report) and trigger a browser
  * download. Use this instead of a plain ``<a href>`` when the link is wrapped
- * around a ``<button>`` (invalid HTML — the button swallows the click so the
+ * around a ``<button>`` (invalid HTML - the button swallows the click so the
  * anchor never navigates and "nothing happens") or when the request may need
  * headers a navigation can't carry. Throws on a non-OK response so the caller
  * can surface an error toast.

@@ -46,7 +46,7 @@ def _looks_like_dead_conn(exc: BaseException) -> bool:
     return any(hint in msg for hint in _DEAD_CONNECTION_HINTS)
 
 
-# Substrings that indicate a PERMANENT failure — retrying will never help.
+# Substrings that indicate a PERMANENT failure - retrying will never help.
 # We bail out immediately on these instead of wasting the retry budget.
 _AUTH_FAILURE_HINTS = (
     "password",
@@ -101,7 +101,7 @@ class Connector(ABC):
 
         Permanent failures (bad password, locked account, missing role)
         are detected via ``_looks_like_auth_failure`` and raised on the
-        first attempt — no point retrying those. Everything else (network
+        first attempt - no point retrying those. Everything else (network
         blips, brief timeouts, token-refresh races) gets up to
         ``settings.connect_retries`` extra attempts with linearly growing
         backoff. The last error is re-raised if all attempts fail.
@@ -147,7 +147,7 @@ class Connector(ABC):
 
         Run a 1-row query that the dialect tells us is the right ping
         statement (Oracle ``SELECT 1 FROM DUAL``, others ``SELECT 1``).
-        Returns False on ANY error — caller's job to drop and reopen.
+        Returns False on ANY error - caller's job to drop and reopen.
         """
         try:
             cur = conn.cursor()
@@ -181,7 +181,7 @@ class Connector(ABC):
             self._conn = self._connect_with_retry()
             return self._conn
         if validate and not self._is_alive(self._conn):
-            # Stale — drop and reopen
+            # Stale - drop and reopen
             self._drop_conn()
             self._conn = self._connect_with_retry()
         return self._conn
@@ -215,7 +215,7 @@ class Connector(ABC):
         """Public method: close the cached connection. Safe to call multiple times.
 
         ``force=False`` (default): acquires the connector lock first.
-        Safe and orderly — waits for any in-flight cursor to finish.
+        Safe and orderly - waits for any in-flight cursor to finish.
 
         ``force=True``: SKIPS the lock and closes the underlying
         connection immediately. Use when the connector is wedged (a
@@ -341,7 +341,7 @@ class Connector(ABC):
         out: list[ColumnInfo] = []
         for r in rows:
             name, dtype, nullable, ordinal = r[0], r[1], r[2], r[3]
-            # New fields (positions 4, 5, 6) — may be absent on older
+            # New fields (positions 4, 5, 6) - may be absent on older
             # dialect implementations that only SELECT 4 columns.
             char_max_length = r[4] if len(r) > 4 else None
             numeric_precision = r[5] if len(r) > 5 else None

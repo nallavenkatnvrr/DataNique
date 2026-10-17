@@ -1,4 +1,4 @@
-// Preload — runs in an isolated context before the renderer loads.
+// Preload - runs in an isolated context before the renderer loads.
 //
 // Its only job is to expose the loopback backend's base URL to the React app
 // as `window.__API_BASE__`. The frontend's api/client.ts reads that and

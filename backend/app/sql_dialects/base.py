@@ -42,8 +42,8 @@ class SqlDialect(ABC):
     # one SQL statement (so the same-endpoint SQL JOIN path is valid even when
     # the two tables live in different databases). SQL Server (3-part naming),
     # Snowflake (cross-db), MySQL (db.table), and Oracle (schema-scoped, DB
-    # name ignored) all qualify. Postgres does NOT — a connection is bound to
-    # one database — so it overrides this to False, forcing the cross-DB
+    # name ignored) all qualify. Postgres does NOT - a connection is bound to
+    # one database - so it overrides this to False, forcing the cross-DB
     # sort-merge path when the databases differ.
     supports_cross_database_join: bool = True
 
@@ -176,7 +176,7 @@ FROM (
         Must yield the SAME integer on every dialect for the same hex string,
         so the in-DB checksum engine can compare per-bucket SUM checksums
         across heterogeneous databases. ``start=1`` reads chars 1..14; ``start=
-        15`` reads chars 15..28 — two INDEPENDENT 56-bit signatures of the same
+        15`` reads chars 15..28 - two INDEPENDENT 56-bit signatures of the same
         128-bit MD5, used together (dual signature) to drive bucket-collision
         odds to effectively zero. Only dialects with
         ``supports_checksum_bucketing = True`` override this. The base raises
@@ -223,7 +223,7 @@ FROM (
         ``cnt`` is the row count in that bucket; ``chk``/``chk2`` are
         order-independent SUM signatures of the row hashes (``chk2`` only when
         ``dual``). The engine compares these <=16 small rows per side to decide
-        which buckets to drill — buckets whose ``(cnt, chk, chk2)`` match on
+        which buckets to drill - buckets whose ``(cnt, chk, chk2)`` match on
         both sides are trusted identical and never transferred.
         """
         # Fingerprints must include the key as well as payload columns: if
@@ -339,7 +339,7 @@ GROUP BY seg
         key_column: str,
         filter_sql: str | None = None,
     ) -> str:
-        """HyperLogLog-style approximate distinct count of the key — an instant
+        """HyperLogLog-style approximate distinct count of the key - an instant
         cardinality estimate for the quick-estimate pre-pass."""
         q = self.quote_ident(key_column)
         where = f"WHERE {filter_sql}" if filter_sql else ""
@@ -440,15 +440,15 @@ FROM {fq_table}
             sort-merge on the streaming results.
         stable_order
             When ``True`` (used by the cross-DB sort-merge), emit THREE columns
-            ``(key_sort, key_val, row_hash)`` and order by ``key_sort`` — where
+            ``(key_sort, key_val, row_hash)`` and order by ``key_sort`` - where
             ``key_sort`` is ``LOWER(MD5(key_val))``, a lowercase hex string.
 
             WHY: a raw cross-DB sort-merge ordered the streams by ``key_val``
             and merged them with a Python ``<`` comparison. That silently
-            BREAKS when the two databases order strings differently — a
+            BREAKS when the two databases order strings differently - a
             case/accent-insensitive collation on one side, a byte/code-point
             collation on the other, ``NULL`` ordering, or numeric-vs-text key
-            rendering — producing phantom only-in-source / only-in-target rows.
+            rendering - producing phantom only-in-source / only-in-target rows.
             A lowercase-hex MD5 contains only ``[0-9a-f]``, which sorts
             IDENTICALLY under every common collation AND matches Python's
             code-point comparison, so both sides and the merge agree. The

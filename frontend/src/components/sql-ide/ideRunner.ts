@@ -156,7 +156,7 @@ export async function runStatements(req: RunRequest): Promise<void> {
 
   // Target result tab (DBeaver semantics): reuse the active result unless it
   // is pinned or running, or a new tab was asked for. Plans and row counts
-  // always open their own tab, and a query never overwrites one of them —
+  // always open their own tab, and a query never overwrites one of them -
   // it reuses the most recent ordinary result instead.
   const isData = (k: RunKind) => k === "statement" || k === "script";
   const reusable = (r: ResultTab | undefined): r is ResultTab =>
@@ -382,7 +382,7 @@ function applyFinal(tabId: string, rtId: string, ex: SqlExecution, conn: Connect
     updateTab(tabId, (t) => ({ ...t, txnPending: true }));
   }
 
-  // Query history (user statements only — not the EXPLAIN / COUNT wrappers).
+  // Query history (user statements only - not the EXPLAIN / COUNT wrappers).
   if (tab && before && (before.kind === "statement" || before.kind === "script")) {
     const { database, schema } = effectiveContext(tab, conn);
     const at = new Date().toISOString();
@@ -449,7 +449,7 @@ export async function cancelRun(tabId: string, rtId: string): Promise<void> {
   try {
     await api.cancelExecution(r.sessionId, r.execId);
   } catch (e) {
-    // Already finished between the click and the request — the poll will pick it up.
+    // Already finished between the click and the request - the poll will pick it up.
     if (!/^400\b/.test(String((e as any)?.message))) toast.error("Cancel failed", { description: errText(e) });
   }
 }
@@ -494,7 +494,7 @@ export async function allRows(
   const rows = set.rows.slice();
   if (!set.hasMore) return rows;
   if (!r.sessionId || !r.execId) {
-    toast.error("The result's session is gone — re-run the query to load every row.");
+    toast.error("The result's session is gone - re-run the query to load every row.");
     return null;
   }
   try {
@@ -547,7 +547,7 @@ export async function endTransaction(tabId: string, commit: boolean): Promise<bo
   } catch (e) {
     if (isNotFound(e)) {
       updateTab(tabId, (t) => ({ ...t, sessionId: null, txnPending: false }));
-      toast.warning("Session already ended", { description: "Nothing left to commit — the server rolled it back." });
+      toast.warning("Session already ended", { description: "Nothing left to commit - the server rolled it back." });
       return true;
     }
     toast.error(commit ? "Commit failed" : "Rollback failed", { description: errText(e) });

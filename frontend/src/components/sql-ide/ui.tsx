@@ -304,7 +304,7 @@ export function Popover({
 }
 
 // ---------------------------------------------------------------------------
-// PickerChip — toolbar chip that opens a searchable list (connection, database, schema…)
+// PickerChip - toolbar chip that opens a searchable list (connection, database, schema…)
 // ---------------------------------------------------------------------------
 
 export interface PickerOption {
@@ -685,7 +685,7 @@ export function ParamsHost() {
       >
         <h3 className="text-base font-semibold">Bind parameters</h3>
         <p className="mt-1 text-xs text-muted-foreground">
-          Values are inserted into the SQL exactly as typed — quote text values, e.g. <code className="font-mono">'ACTIVE'</code>.
+          Values are inserted into the SQL exactly as typed - quote text values, e.g. <code className="font-mono">'ACTIVE'</code>.
         </p>
         <div className="mt-4 max-h-[50vh] space-y-2 overflow-y-auto pr-1 scrollbar-thin">
           {req.names.map((n, i) => (

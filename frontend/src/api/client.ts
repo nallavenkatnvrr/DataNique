@@ -160,7 +160,7 @@ export interface SnowflakeContext {
   schema_name?: string | null;
 }
 
-/** Response from /api/connections/{id}/snowflake/context — the lists the
+/** Response from /api/connections/{id}/snowflake/context - the lists the
  *  Snowflake account exposes, plus the connection's current session.
  *  Each list comes with diagnostics so the UI can show specific errors
  *  per dropdown instead of a single perpetual loading spinner. */
@@ -191,11 +191,11 @@ export interface SnowflakeContextResponse {
   };
   /** Set by the backend when the metadata connector was just
    *  force-evicted due to a wedged query. The frontend should retry
-   *  ONCE automatically — the next call will start with a fresh
+   *  ONCE automatically - the next call will start with a fresh
    *  Snowflake session and should succeed if the underlying issue
    *  was a transient driver hang. */
   evicted_and_ready_for_retry?: boolean;
-  /** Human-readable explanation of Snowflake's privilege model — empty
+  /** Human-readable explanation of Snowflake's privilege model - empty
    *  lists usually mean "your role lacks USAGE" rather than a bug. */
   note?: string;
 }
@@ -264,7 +264,7 @@ export interface DashboardMetrics {
  *   Vite dev proxy (and same-origin prod web build) forwards to the backend.
  * - **Electron desktop**: the preload script sets `window.__API_BASE__` to the
  *   loopback address of the bundled FastAPI backend (e.g. `http://127.0.0.1:8137`).
- *   The UI loads from `file://`, so relative `/api` paths would not resolve —
+ *   The UI loads from `file://`, so relative `/api` paths would not resolve -
  *   this absolute base is required there.
  */
 declare global {
@@ -306,7 +306,7 @@ export class ApiError extends Error {
   /** The server's message without the "404 Not Found:" prefix. */
   detail: string;
   constructor(status: number, statusText: string, detail: string, code?: string) {
-    // "<status> <text>: <detail>" — the SQL IDE matches on the leading status.
+    // "<status> <text>: <detail>" - the SQL IDE matches on the leading status.
     super(`${status} ${statusText}: ${detail}`);
     this.status = status;
     this.code = code;

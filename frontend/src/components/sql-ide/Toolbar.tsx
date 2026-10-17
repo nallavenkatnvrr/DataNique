@@ -137,7 +137,7 @@ export function Toolbar({ tab, conn, connections, ctx, running, cmd, onConnectio
             </button>
           }
           className="font-medium"
-          title={conn ? `${conn.name} (${conn.db_type})${prod ? " — PRODUCTION" : ""}` : "Choose a connection"}
+          title={conn ? `${conn.name} (${conn.db_type})${prod ? " - PRODUCTION" : ""}` : "Choose a connection"}
         />
         {conn && fields.database && (
           <PickerChip

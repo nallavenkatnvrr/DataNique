@@ -1,8 +1,8 @@
 /**
  * GitHub (Primer) inspired CodeMirror theme driven entirely by CSS custom
  * properties (see `.dv-ed` in index.css). Because colours come from CSS, the
- * editor follows the app's light/dark mode — or a forced GitHub Light / Dark
- * choice — without rebuilding any editor extension.
+ * editor follows the app's light/dark mode - or a forced GitHub Light / Dark
+ * choice - without rebuilding any editor extension.
  */
 import { EditorView } from "@codemirror/view";
 import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";

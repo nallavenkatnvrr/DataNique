@@ -74,7 +74,7 @@ async def lifespan(app: FastAPI):
         _th.Thread(target=_probe_crypto, daemon=True, name="dv-crypto-probe").start()
     except Exception:
         pass
-    # Start the watchdog — self-heals other background threads.
+    # Start the watchdog - self-heals other background threads.
     try:
         from app.services.watchdog import start_watchdog
         start_watchdog()
@@ -202,7 +202,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Request-ID tracing + clean JSON envelope for unhandled 500s (additive —
+# Request-ID tracing + clean JSON envelope for unhandled 500s (additive -
 # successful responses pass through unchanged).
 from app.logging_config import install_observability
 install_observability(app)
@@ -349,7 +349,7 @@ def _mount_spa() -> None:
 
         Skips regeneration when an up-to-date sibling already exists (keyed on
         mtime), so only the first startup after a build pays the cost. Runs in a
-        daemon thread — until a variant exists the responder just serves the
+        daemon thread - until a variant exists the responder just serves the
         next-best encoding, so nothing blocks on this."""
         for p in root.rglob("*"):
             try:
@@ -421,7 +421,7 @@ _mount_spa()
 
 if __name__ == "__main__":
     import uvicorn
-    # Defaults to 127.0.0.1 (loopback only) — see config.bind_host. Set
+    # Defaults to 127.0.0.1 (loopback only) - see config.bind_host. Set
     # DV_BIND_HOST=0.0.0.0 to expose beyond localhost, ideally together with
     # DV_API_TOKEN so the open SQL IDE isn't reachable unauthenticated.
     uvicorn.run(

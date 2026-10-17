@@ -63,7 +63,7 @@ export function MappingEditor({ src, tgt, loading, error, state, onChange }: {
         <div className="flex flex-wrap items-center gap-1.5 text-xs">
           <KeyRound className="h-3.5 w-3.5 text-changed" />
           {keys.length ? keys.map((k) => <span key={k.source} className="dv-chip border-changed/40 bg-changed/10 text-changed">{k.source}</span>)
-            : <span className="text-muted-foreground">No key — rows compared as whole rows{pk.length ? "" : " (or the table's primary key, if it has one)"}</span>}
+            : <span className="text-muted-foreground">No key - rows compared as whole rows{pk.length ? "" : " (or the table's primary key, if it has one)"}</span>}
           {pk.length > 0 && <span className="text-muted-foreground">· primary key: {pk.join(", ")}</span>}
         </div>
         <button type="button" onClick={() => rebuild(state.byPosition)} className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
@@ -94,7 +94,7 @@ export function MappingEditor({ src, tgt, loading, error, state, onChange }: {
       </div>
       {(onlyS.length > 0 || onlyT.length > 0) && <ManualPair onlyS={onlyS} onlyT={onlyT} onAdd={(s, t) => onChange({ ...state, pairs: [...state.pairs, { source: s, target: t, role: "compare" }], customised: true })} />}
       {state.customised && (
-        <div className="flex items-center gap-1.5 text-xs text-primary"><Sparkles className="h-3.5 w-3.5" /> Custom mapping — exactly these pairs are compared.</div>
+        <div className="flex items-center gap-1.5 text-xs text-primary"><Sparkles className="h-3.5 w-3.5" /> Custom mapping - exactly these pairs are compared.</div>
       )}
     </div>
   );

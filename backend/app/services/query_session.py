@@ -54,7 +54,7 @@ class Execution:
     elapsed_ms: int = 0
     # Multiple result sets (for stored procs that return >1 result)
     result_sets: list[dict] = field(default_factory=list)
-    # Snowflake-only: { role, warehouse, database, schema_name } — each
+    # Snowflake-only: { role, warehouse, database, schema_name } - each
     # field, if set, becomes a `USE <kind> "name"` statement prepended
     # to the user's SQL.
     snowflake_context: dict | None = None
@@ -148,7 +148,7 @@ class Execution:
         }
 
     def rows_window(self, set_index: int, offset: int, limit: int) -> dict:
-        """Return just a row window for one result set — for lazy scroll."""
+        """Return just a row window for one result set - for lazy scroll."""
         off = max(0, offset)
         if 0 <= set_index < len(self.result_sets):
             full = self.result_sets[set_index].get("rows", [])
@@ -196,7 +196,7 @@ class Session:
     # only repeated when the mode or the underlying connection changes.
     autocommit_state: tuple[int, bool] | None = None
     # True once a statement ran in manual-commit mode and neither COMMIT nor
-    # ROLLBACK has been issued since — switching back to auto-commit is then
+    # ROLLBACK has been issued since - switching back to auto-commit is then
     # refused instead of silently discarding or committing that work.
     manual_dirty: bool = False
 
@@ -229,7 +229,7 @@ class Session:
 # How many rows the SQL IDE fetches into server memory per query. The grid
 # only ships ~200 at a time to the browser (windowed) and lazily loads more
 # on scroll, so this larger cap just controls how far you can scroll before
-# hitting the "truncated" ceiling — it does NOT bloat the initial payload.
+# hitting the "truncated" ceiling - it does NOT bloat the initial payload.
 MAX_ROWS_DEFAULT = 200_000
 MAX_ROWS_LIMIT = 1_000_000
 MAX_RESULT_SETS = 20
@@ -267,7 +267,7 @@ class QuerySessionManager:
     -------------------
     There is no authentication or tenant isolation. The session store and
     connection cache are shared across the single process. This is
-    intentional — the tool runs locally on the developer's machine.
+    intentional - the tool runs locally on the developer's machine.
     """
 
     def __init__(self, max_workers: int = 8):
@@ -686,7 +686,7 @@ class QuerySessionManager:
                     except Exception as exc:
                         if ex._cancel_flag:
                             # The driver aborted the statement because the
-                            # user cancelled it — not a SQL error.
+                            # user cancelled it - not a SQL error.
                             msg["status"] = "cancelled"
                             ex.status = ExecStatus.CANCELLED
                             return
@@ -757,7 +757,7 @@ class QuerySessionManager:
             if not s:
                 raise KeyError("Session not found")
             if any(e.status in (ExecStatus.QUEUED, ExecStatus.RUNNING) for e in s.executions.values()):
-                raise RuntimeError("A query is still running in this tab — wait for it or cancel it first")
+                raise RuntimeError("A query is still running in this tab - wait for it or cancel it first")
             s.last_activity = time.monotonic()
             connection_id = s.connection_id
         db_session = get_db_session()

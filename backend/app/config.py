@@ -95,15 +95,15 @@ class Settings(BaseSettings):
     # ----- Connection robustness -----
     #
     # These tune how aggressively to give up on hanging or dead database
-    # connections. Defaults are conservative — bump them if you're on a
+    # connections. Defaults are conservative - bump them if you're on a
     # very slow VPN or hitting a server that takes a long time to auth.
     #
-    # DV_CONNECT_TIMEOUT=30      # seconds — how long to wait for initial
+    # DV_CONNECT_TIMEOUT=30      # seconds - how long to wait for initial
     #                              TCP+auth before bailing
-    # DV_TEST_TIMEOUT=30         # seconds — overall budget for the "Test
+    # DV_TEST_TIMEOUT=30         # seconds - overall budget for the "Test
     #                              connection" UI button before the
     #                              endpoint gives up and returns an error
-    # DV_QUERY_TIMEOUT=0         # seconds — kill long-running queries
+    # DV_QUERY_TIMEOUT=0         # seconds - kill long-running queries
     #                              after this many seconds. 0 = no limit
     #                              (default). Set e.g. 600 to abort
     #                              queries that run > 10 min.
@@ -140,7 +140,7 @@ class Settings(BaseSettings):
     # pooling lets the "compare" purpose hand out up to N connectors for the
     # same connection so concurrent runs proceed in parallel.
     #
-    # SAFETY: pooling is NEVER applied to Snowflake — opening extra sessions
+    # SAFETY: pooling is NEVER applied to Snowflake - opening extra sessions
     # can trigger an SSO browser pop-up. It only applies to password-auth
     # databases (postgres/mysql/sqlserver/oracle). Leave OFF unless multiple
     # users hit the same connection at once.
@@ -157,7 +157,7 @@ class Settings(BaseSettings):
     # a row-by-row DB-API cursor, which is 5-6x slower for bulk reads.
     #
     # These flags enable optional accelerated read paths for those three
-    # databases. Both are SAFE — if the library/extension is missing or the
+    # databases. Both are SAFE - if the library/extension is missing or the
     # accelerated read fails for any reason, the engine silently falls back
     # to the existing cursor path. No correctness impact, only speed.
     #
@@ -193,7 +193,7 @@ class Settings(BaseSettings):
     #                                # cross-engine identical) or "xxh3"/"xxh64"
     #                                # (3-5x faster, requires `pip install
     #                                # xxhash`; only valid when BOTH sides use
-    #                                # the same engine — never mix with the
+    #                                # the same engine - never mix with the
     #                                # SQL-side md5 of the standard engine).
     max_compare_rows: int = 0
     hash_algo: str = "md5"

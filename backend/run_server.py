@@ -3,12 +3,12 @@ Programmatic uvicorn entry point for the Datanique backend.
 
 This is used in two situations:
 
-1. **PyInstaller-frozen desktop build** — the Electron app spawns the frozen
+1. **PyInstaller-frozen desktop build** - the Electron app spawns the frozen
    ``datanique-backend(.exe)`` produced from this file. PyInstaller cannot use
    uvicorn's ``"app.main:app"`` import-string + reload machinery, so we import
    the FastAPI ``app`` object directly and hand it to ``uvicorn.run``.
 
-2. **Plain python** — ``python run_server.py`` works the same as the batch
+2. **Plain python** - ``python run_server.py`` works the same as the batch
    script, honouring the ``DV_BIND_HOST`` / ``DV_BIND_PORT`` env vars.
 
 Host/port come from the environment so the Electron launcher can pick a free

@@ -1,4 +1,4 @@
-"""Statement splitter tests — shared cases with frontend/src/lib/sqlSplit.test.ts."""
+"""Statement splitter tests - shared cases with frontend/src/lib/sqlSplit.test.ts."""
 from app.services.sql_split import split_sql_statements as split, split_statements
 
 

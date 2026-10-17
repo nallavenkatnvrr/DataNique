@@ -9,17 +9,17 @@ rendered ``15-MAY-90`` vs ``1990-05-15``) don't show up as false
 differences.
 
 The trap: blanket normalization (the old single ``canonicalize_hash``
-boolean) ALSO trimmed strings and could hide REAL data-quality defects —
+boolean) ALSO trimmed strings and could hide REAL data-quality defects -
 trailing spaces, ``NULL`` vs ``''`` vs ``'   '``. For a data *validator*
 that's exactly backwards: those are the differences you want surfaced.
 
 So normalization is split into two classes of toggle:
 
-* **Representation** (``numbers`` / ``timestamps`` / ``booleans``) — pure
+* **Representation** (``numbers`` / ``timestamps`` / ``booleans``) - pure
   cross-DB rendering artifacts that are never themselves a data issue.
   Default **ON** when normalization is enabled.
 * **String handling** (``rtrim`` / ``ltrim`` / ``case_insensitive`` /
-  ``null_equals_empty`` / ``null_equals_blank``) — each can mask a real
+  ``null_equals_empty`` / ``null_equals_blank``) - each can mask a real
   difference, so every one is **opt-in** (default **OFF**).
 
 Each engine (pandas / polars / duckdb / spark / trino / standard) reads the
@@ -72,7 +72,7 @@ class NormalizeOptions:
     numbers: bool = True
     timestamps: bool = True
     booleans: bool = True
-    # --- string handling (default OFF — each can hide a real diff) ---
+    # --- string handling (default OFF - each can hide a real diff) ---
     rtrim: bool = False
     ltrim: bool = False
     case_insensitive: bool = False
@@ -106,7 +106,7 @@ class NormalizeOptions:
           2. Else legacy ``canonicalize_hash=True`` maps to the OLD blanket
              behavior (representation ON **and** trim ON) so existing saved
              templates / API callers keep their semantics.
-          3. Else disabled (raw cast — same logical value must be byte-equal).
+          3. Else disabled (raw cast - same logical value must be byte-equal).
         """
         if normalize is not None:
             g = normalize.get

@@ -39,7 +39,7 @@ export function cmDialectFor(dbType: DbType | undefined | null): SQLDialect {
 // Grammar-aware completion uses dt-sql-parser, which ships exact grammars for
 // MySQL and PostgreSQL only (its Trino/Spark/Hive grammars mis-suggest for
 // Snowflake, Oracle and SQL Server, so those engines use keyword + schema
-// completion instead). Each grammar is imported on its own — the package
+// completion instead). Each grammar is imported on its own - the package
 // root would pull every dialect (~7 MB) into the bundle.
 
 export type DtParserName = "MySQL" | "PostgreSQL";
@@ -55,7 +55,7 @@ const LOADERS: Record<DtParserName, () => Promise<new () => any>> = {
   MySQL: () => import("dt-sql-parser/dist/parser/mysql").then((m) => m.MySQL),
 };
 
-// Parser instances are cached — constructing the antlr-backed parser is not free.
+// Parser instances are cached - constructing the antlr-backed parser is not free.
 const _parserCache = new Map<DtParserName, any>();
 
 export interface DtBundle {

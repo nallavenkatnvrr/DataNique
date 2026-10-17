@@ -1,6 +1,6 @@
 """Shared pytest fixtures and helpers.
 
-These tests are pure-logic unit tests — they never touch a live database.
+These tests are pure-logic unit tests - they never touch a live database.
 A lightweight ``FakeConnector`` stands in for the real DB connectors so the
 DDL / INSERT generators can be exercised deterministically.
 """
@@ -20,7 +20,7 @@ if str(BACKEND_DIR) not in sys.path:
 
 # Point the app at a throwaway SQLite file BEFORE ``app.config`` is imported
 # anywhere, so the router tests never touch the real data_validator.db. This
-# runs at conftest import time — earlier than any test module — so the
+# runs at conftest import time - earlier than any test module - so the
 # ``Settings()`` singleton picks it up. Harmless for the pure-logic tests,
 # which never open the (now-redirected) engine.
 _TEST_DATA_DIR = Path(tempfile.mkdtemp(prefix="dv_test_"))

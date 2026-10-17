@@ -523,7 +523,7 @@ def run_compare(spec: CompareSpec, rc: RunContext) -> dict:
             rc.log("info", f"{role.capitalize()}: {i['rows']:,} rows via {i['reader']} in {i['read_ms'] / 1000:.2f}s")
             for a in i.get("attempts") or []:
                 if a.get("skipped"):
-                    rc.log("debug", f"{role}: {a['reader']} skipped — {a.get('error')}")
+                    rc.log("debug", f"{role}: {a['reader']} skipped - {a.get('error')}")
         rc.check()
 
         # ---- schema / pairing --------------------------------------------
@@ -542,7 +542,7 @@ def run_compare(spec: CompareSpec, rc: RunContext) -> dict:
         comps = [p for p in pairs if p.role == "compare"]
         if only_s or only_t:
             warnings.append(
-                f"Columns only in source: {', '.join(only_s) or '—'}; only in target: {', '.join(only_t) or '—'} "
+                f"Columns only in source: {', '.join(only_s) or '-'}; only in target: {', '.join(only_t) or '-'} "
                 "(not compared, not part of the verdict)"
             )
 

@@ -16,8 +16,8 @@ import { toast } from "sonner";
 //    a truncated cell".
 //
 // 2. Visual Diff row click → ``rowDetail({ columns, leftValues,
-//    rightValues })``. The dialog shows three columns per row — name /
-//    L / R — with mismatches highlighted. Lets the user inspect WHY
+//    rightValues })``. The dialog shows three columns per row - name /
+//    L / R - with mismatches highlighted. Lets the user inspect WHY
 //    a row was flagged without squinting at truncated cells.
 //
 // In both modes, control characters are rendered visibly (NUL, TAB,

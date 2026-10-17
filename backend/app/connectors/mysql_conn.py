@@ -34,7 +34,7 @@ class MySqlConnector(Connector):
             "database": self.record.database,
             "connect_timeout": connect_timeout,
             "charset": "utf8mb4",
-            # Note: PyMySQL has no protocol compression — passing
+            # Note: PyMySQL has no protocol compression - passing
             # compress=True raises NotImplementedError before connecting.
             # Autocommit on: every statement sees fresh data instead of a
             # REPEATABLE READ snapshot pinned for the connection's lifetime,
@@ -54,7 +54,7 @@ class MySqlConnector(Connector):
 
         conn = pymysql.connect(**params)
 
-        # TCP keepalive on the underlying socket — survives idle periods
+        # TCP keepalive on the underlying socket - survives idle periods
         # behind firewalls / load balancers that drop quiet sessions.
         # PyMySQL exposes the raw socket via _sock; we set SO_KEEPALIVE
         # there. Per-platform tunables (TCP_KEEPIDLE etc) are best-effort.
@@ -62,7 +62,7 @@ class MySqlConnector(Connector):
             sock = conn._sock
             if sock is not None:
                 sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
-                # Linux only — start probing after 60s, every 10s, give
+                # Linux only - start probing after 60s, every 10s, give
                 # up after 5 probes. Windows uses registry-level
                 # defaults; the SO_KEEPALIVE flag alone is enough there.
                 for opt_name, val in (

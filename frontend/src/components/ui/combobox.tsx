@@ -18,7 +18,7 @@ export function Combobox({
   value,
   options,
   onChange,
-  placeholder = "— select —",
+  placeholder = "- select -",
   disabled,
   loading,
   emptyLabel = "No matches",
@@ -133,7 +133,7 @@ export function Combobox({
                   key={opt}
                   onMouseEnter={() => setHighlight(i)}
                   onClick={() => pick(opt)}
-                  // Phase 4.41: `title={opt}` shows full name on hover —
+                  // Phase 4.41: `title={opt}` shows full name on hover -
                   // belt-and-suspenders with the wider dropdown so
                   // truncated entries are still inspectable.
                   title={opt}

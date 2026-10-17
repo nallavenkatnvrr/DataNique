@@ -5,7 +5,7 @@ A single daemon thread that periodically:
   1. Restarts the connection heartbeat if it has silently died.
   2. Restarts the Spark heartbeat if applicable.
   3. Marks long-running query executions as "stuck" (visibility, not
-     auto-kill — we don't want to abort the user's real work).
+     auto-kill - we don't want to abort the user's real work).
   4. Logs structured warnings about resource state so problems are
      visible in the backend console even if no one's looking at the
      health endpoint.
@@ -19,7 +19,7 @@ query hangs trying to reuse a dead socket. The user sees "backend
 hung" with no obvious cause.
 
 This watchdog catches that. It runs INDEPENDENTLY (separate thread)
-and only does cheap "is it alive?" checks — never holds locks, never
+and only does cheap "is it alive?" checks - never holds locks, never
 talks to databases. If something's dead, log loudly and restart it.
 
 Watchdog itself is also defensively coded: every iteration wraps its
@@ -34,12 +34,12 @@ import time
 
 log = logging.getLogger("dv.watchdog")
 
-# Watchdog interval — every minute is fine. The things it watches change
+# Watchdog interval - every minute is fine. The things it watches change
 # slowly.
 _INTERVAL_S = 60
 
 # How long an execution needs to run before we flag it as "stuck"
-# (for visibility only — we don't auto-kill user work).
+# (for visibility only - we don't auto-kill user work).
 _STUCK_EXECUTION_MINUTES = 30
 
 
@@ -67,7 +67,7 @@ def _check_connector_heartbeat() -> None:
         if getattr(factory, "_heartbeat_thread", None) is None:
             return  # not started yet: it starts with the first cached connection
         if not factory.is_heartbeat_alive():
-            log.warning("Connection heartbeat thread is DEAD — restarting")
+            log.warning("Connection heartbeat thread is DEAD - restarting")
             factory._start_heartbeat_thread()
             # Verify restart
             if factory.is_heartbeat_alive():
@@ -79,7 +79,7 @@ def _check_connector_heartbeat() -> None:
 
 
 def _check_stuck_executions() -> None:
-    """Identify long-running query executions and log them. NO auto-kill —
+    """Identify long-running query executions and log them. NO auto-kill -
     the user might have legitimate long jobs (10M-row compare etc.)."""
     try:
         from app.services.query_session import query_manager, ExecStatus
@@ -108,7 +108,7 @@ def _check_stuck_executions() -> None:
 
 
 def _watchdog_loop() -> None:
-    """Main loop. Defensively wrapped — no failure within an iteration
+    """Main loop. Defensively wrapped - no failure within an iteration
     can ever kill this thread."""
     global _last_watchdog_tick
     log.info("Watchdog started (interval=%ds)", _INTERVAL_S)
@@ -126,7 +126,7 @@ def _watchdog_loop() -> None:
 
 
 def start_watchdog() -> None:
-    """Start the watchdog. Idempotent — safe to call multiple times."""
+    """Start the watchdog. Idempotent - safe to call multiple times."""
     global _watchdog_thread
     if _watchdog_thread is not None and _watchdog_thread.is_alive():
         return

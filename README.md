@@ -1,65 +1,72 @@
 # Datanique
 
-A web application to connect to multiple databases, validate data between tables or custom SQL queries, and work as a full SQL IDE — all from one interface.
+Datanique is a data validation tool I built for comparing data between databases and files. You point it at two sides (a table, a SQL query or a file), it reads both, lines the rows up by key and tells you what matches, what changed and what is missing on either side. It also has a SQL IDE for day to day querying.
 
-Supports **Snowflake, Oracle, SQL Server, PostgreSQL, MySQL** with cross-engine comparisons (e.g. Oracle vs Snowflake).
+Databases: Snowflake, Oracle, SQL Server, PostgreSQL and MySQL. Cross-database compares work too, for example Oracle against Snowflake.
 
-## Features
+## What it does
 
-### Data Validation
-- **Any side, any combination** — a table, a SQL query or a file on each side: table vs table, query vs table, file vs table, file vs file, across Snowflake, Oracle, SQL Server, PostgreSQL and MySQL
-- **Files** — CSV / TSV / PSV / TXT / DAT (+ .gz, .zst, .zip), Excel (.xlsx .xlsm .xlsb .xls .ods), Parquet (files or folders), JSON / NDJSON, Avro, ORC, Arrow / Feather, fixed width; upload them or read them in place by path
-- **One engine** — DuckDB-based: both sides are read concurrently through the fastest available reader, compared with a single hash join, and every difference is saved encrypted for browsing and export
-- **Fast readers** — DuckDB postgres/mysql scanners, ADBC (PostgreSQL, Snowflake, SQL Server and MySQL via dbc), Arrow ODBC, Oracle and Snowflake Arrow fetch, with automatic fallback; the run log names the reader used
-- **In-database strategy** — for very large tables on one connection, the database joins them and returns only the differing rows
-- **Type-aware comparison** — 12.50 = 12.5, '007' = 7, DATE = midnight TIMESTAMP, time zones to UTC, doubles to 15 significant digits, true = 1 = Y; optional trims, case, NULL = '', numeric tolerance, timestamp precision
-- **Keys** — chosen, taken from the primary key, or none (whole-row multiset compare); duplicate keys are paired, not multiplied
-- **Results** — verdict, equal / changed / only-in-source / only-in-target, rows that differ per column, column statistics, file format checks (line endings, BOM, checksums), full difference browser with search and column filter, exports to Excel / CSV / Parquet / JSON, Excel report
-- **Bulk** — pair whole schemas or folders by name, run with bounded concurrency in the background
-- **Background jobs** — runs continue when you leave the page; live progress and cancel
-- **Security** — master password vault (scrypt + AES-256-GCM), recovery key, optional "remember on this computer" (Windows Credential Manager), encrypted history / diffs / templates / passwords, API locked until unlocked
+### Compare
 
-### SQL IDE (DBeaver-like)
-- **Editor** — CodeMirror 6 with a GitHub light/dark theme that follows the app, dialect-aware highlighting, completion of tables, columns, keywords and templates (`sel`, `selw`, `grp`, `dupes`, `cte`, `merge`, …), grammar-aware completion for PostgreSQL / MySQL, multi-cursor, rectangular selection, folding, find & replace, go to line, formatter (Ctrl+Shift+F), upper/lower case, per-tab undo history
-- **Statement-aware execution** — a dialect-aware splitter (strings, comments, `$$` bodies, `BEGIN … END`, Oracle `/`, SQL Server `GO`, MySQL `DELIMITER`) drives Ctrl+Enter (statement at cursor / selection), Alt+X (script), the ▶ run markers in the gutter and the current-statement highlight
-- **Errors in place** — a failing statement is underlined at the reported line/position; the Messages view lists every statement with status, rows and timing
-- **Results** — virtualized grid (keyboard navigation, range selection, Count/Sum/Avg/Min/Max of the selection, copy as TSV/CSV/JSON/Markdown/INSERT/IN-list/WHERE, value filters, quick filter), Text and Record views, value panel (F7, pretty JSON), pinned result tabs, per-result-set tabs for scripts, paging from server memory, Fetch all, exports
-- **Explain plan** (Ctrl+Shift+E) and **Count rows** per dialect; **parameters** (`:name`, `${var}`) are prompted and remembered
-- **Transactions** — auto-commit or manual commit per tab with Commit / Rollback; production connections get a red status bar and a confirmation before data-changing statements
-- **Workspace** — script tabs (rename, reorder, duplicate, reopen closed), versioned script library per connection, database explorer (columns, quick queries, DDL / INSERT / EXEC generators, drag names into the editor), persistent query history, command palette (Ctrl+Shift+P), keyboard shortcuts dialog, editor settings (Ctrl+,), focus mode
-- **Sessions** — one server session per tab, closed when the tab closes or the page unloads, expired after 8 idle hours; cancelling a statement interrupts it through the driver and keeps the session
-- **Visual Diff / Quick Diff** — compare any two result sets side-by-side (cell-level diff, Excel export)
-- **Query manager** — running and recent queries from every IDE session, with cancel
+- Table vs table, query vs table, file vs table or file vs file, in any combination.
+- Files: CSV, TSV, PSV, TXT, DAT (also .gz, .zst and .zip), Excel (.xlsx, .xlsm, .xlsb, .xls, .ods), Parquet (single file or a folder), JSON and NDJSON, Avro, ORC, Arrow/Feather and fixed width. You can upload a file or read it in place from a path.
+- Both sides are read at the same time into DuckDB and compared with a single hash join.
+- Readers per database, fastest first. If one fails the next one is tried, and the run log shows which one was used:
+  - PostgreSQL: DuckDB scanner, ADBC, cursor
+  - MySQL: DuckDB scanner, ADBC, ConnectorX, cursor
+  - SQL Server: ADBC, Arrow ODBC, ConnectorX, cursor
+  - Snowflake: ADBC (password logins), connector Arrow batches, cursor
+  - Oracle: python-oracledb Arrow batches, ConnectorX, cursor
+- Values are compared by type, not by text. 12.50 equals 12.5, '007' equals 7, a DATE equals the same TIMESTAMP at midnight, time zones are compared in UTC, doubles to 15 significant digits, and true, 1 and Y are the same. Trimming, ignore case, NULL equals empty, numeric tolerance and timestamp precision are options.
+- Keys can be picked by name or position, taken from the primary key, or left out. Without keys the whole row is compared as a multiset. Duplicate keys are paired up instead of multiplied.
+- Two big tables on the same connection can be compared inside the database, so only the differing rows come back. This is picked automatically above 20 million rows (`DV_PUSHDOWN_MIN_ROWS`).
+- Every difference is saved (up to 5 million rows per kind). You can browse, search and filter them by column, and export to Excel, CSV, Parquet or JSON. There is also an Excel report with the changed cells highlighted.
+- When both sides are text files you also get format checks: line endings, BOM, trailing spaces and checksums.
+- Bulk mode pairs whole schemas or folders by name and runs them in the background with a concurrency limit.
+- Runs keep going if you leave the page. The live view shows rows read, progress and the log, and you can cancel.
 
-### UI
-- Dark and light themes, command menu (Ctrl+K), lock (Ctrl+Shift+L), live job indicator, virtualized grids
+### SQL IDE
 
-## Architecture
+- CodeMirror 6 editor with highlighting per dialect, completion for tables, columns and keywords, snippets, multi-cursor, find and replace, formatting (Ctrl+Shift+F) and folding.
+- Ctrl+Enter runs the statement under the cursor and Alt+X runs the whole script. The splitter understands strings, comments, `$$` bodies, `BEGIN ... END` blocks, Oracle `/`, SQL Server `GO` and MySQL `DELIMITER`.
+- Errors are underlined at the line the database reports.
+- Results grid with keyboard navigation, range selection, totals for the selection, copy as TSV, CSV, JSON, Markdown, INSERT or IN list, filters, and Text and Record views.
+- Explain plan, row counts, parameters (`:name`, `${var}`), auto-commit or manual commit per tab, and a red status bar with a confirmation step for production connections.
+- Script tabs, a script library per connection, a database explorer with DDL and INSERT generators, query history and a side-by-side diff of two result sets.
 
-- **Backend**: Python FastAPI (0.3.0)
-  - `app/engine/` — compare engine: `spec` (request model), `readers` (database reader chains), `files` (file formats), `canon` (canonical comparison types), `core` (diff), `pushdown` (in-database strategy), `jobs` (background jobs, bulk), `diffstore` / `report` (encrypted diff stores, exports, Excel)
-  - `app/security/` — `vault` (master password, AES-256-GCM, sessions), `vault_migrate`, `crypto`
-  - `app/connectors/`, `app/sql_dialects/` — database drivers and SQL per database
-  - `app/services/query_session.py` — SQL IDE sessions
-  - `app/routers/` — jobs, files, compare history, vault, connections, metadata, sql-ide, templates, settings
-  - `app/db/` — SQLite store with encrypted columns
-- **Frontend**: React + TypeScript + Vite + Tailwind
-  - `components/shell/` — app frame, command menu; `components/vault/` — setup / unlock / recovery
-  - `pages/Compare.tsx` + `components/compare/` — composer; `pages/Job.tsx` — live run; `pages/Run.tsx` + `components/run/DiffBrowser.tsx` — results
-  - `pages/Bulk.tsx`, `History.tsx`, `Batch.tsx`, `Templates.tsx`, `Connections.tsx`, `Settings.tsx`
-  - `pages/SqlIde.tsx` + `components/sql-ide/` — SQL IDE
+### Security
 
-## Quick start (Windows)
+On first start you set a master password. Saved database passwords, run history, saved differences and templates are encrypted with a key that the password unlocks (scrypt and AES-256-GCM). You get a recovery key once at setup. "Remember on this computer" keeps the key in Windows Credential Manager. While the app is locked the API refuses all requests.
+
+## Getting started (Windows)
+
+You need Python 3.10 or newer (I use 3.12) and Node.js 20 or newer.
+
+Easiest way:
+
+```
+start-app.bat
+```
+
+It creates the Python virtual environment, installs the packages and opens the desktop window. The window shows the built frontend, so build it once first:
+
+```
+cd frontend
+npm install
+npm run build
+```
+
+For development, run the backend and the frontend separately:
 
 ```powershell
-# 1. Backend
+# backend
 cd backend
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 
-# 2. Frontend (in a second terminal)
+# frontend, in a second terminal
 cd frontend
 npm install
 npm run dev
@@ -67,42 +74,40 @@ npm run dev
 
 Then open http://localhost:5173.
 
-### Network and API tokens
+Settings go in `backend/.env`. See `backend/.env.example` for the list. Everything has a working default.
 
-The backend binds to loopback by default. Setting `DV_BIND_HOST` to a non-loopback address requires `DV_API_TOKEN`; protected admin actions can additionally use `DV_ADMIN_TOKEN`. A separately built web frontend sends these as `X-API-Token` / `X-Admin-Token` headers when `VITE_API_TOKEN` / `VITE_ADMIN_TOKEN` are configured. Those Vite values are public in the browser bundle and are only shared-secret gates, not multi-user authentication. Embedded desktop launchers bind to loopback and clear both token gates.
+### Offline PCs
 
-### Offline machines
+The PostgreSQL and MySQL scanners and the encryption support in DuckDB are extensions that DuckDB downloads once. On a PC without internet access, copy them into `backend/duckdb_extensions` (see the README in that folder). If they are missing, Datanique still works. It uses the other readers and encrypts the saved differences itself.
 
-The PostgreSQL and MySQL scanners are DuckDB extensions. They are loaded from
-`backend/duckdb_extensions/v<duckdb version>/<platform>/` when present,
-otherwise downloaded once from extensions.duckdb.org. Without either, those
-databases fall back to ADBC or the cursor reader automatically.
+### Running on a network
+
+The backend only listens on localhost by default. If you set `DV_BIND_HOST` to another address you also have to set `DV_API_TOKEN`, and clients send it in the `X-API-Token` header. It is a shared secret, not user accounts.
 
 ## Project layout
 
 ```
-data-validator/
-  backend/
-    app/
-      engine/          # compare engine (readers, files, diff, jobs, diff stores)
-      security/        # vault, encryption
-      connectors/      # DB drivers
-      sql_dialects/    # SQL per database
-      services/        # SQL IDE sessions, DDL generation, settings
-      routers/         # FastAPI routes
-      db/              # SQLite store (encrypted columns)
-      reports/         # Excel report for runs from older versions
-    duckdb_extensions/ # bundled DuckDB scanners (optional)
-  frontend/
-    src/
-      components/      # shell, vault, compare, run, sql-ide, kit
-      pages/           # Home, Compare, Job, Run, Bulk, History, Batch, Templates, Connections, SQL IDE, Settings
-      api/             # API client, engine API, session
+backend/
+  app/
+    engine/        compare engine: readers, file formats, diff, background jobs, saved differences
+    security/      master password and encryption
+    connectors/    database drivers
+    sql_dialects/  SQL that differs per database
+    services/      SQL IDE sessions, DDL generation, settings
+    routers/       API routes
+    db/            SQLite store
+  tests/
+  duckdb_extensions/
+frontend/
+  src/
+    pages/         Home, Compare, live job, result, Bulk, History, Templates, Connections, SQL IDE, Settings
+    components/
+    api/
+desktop_py/        desktop window (pywebview)
+desktop/           Electron shell (optional)
 ```
 
-## Testing
-
-The backend ships a pure-logic unit test suite (no live database required):
+## Tests
 
 ```powershell
 cd backend
@@ -110,24 +115,23 @@ pip install -r requirements-dev.txt
 python -m pytest
 ```
 
-Covers the compare engine on every file format, normalization rules, keyed
-and whole-row diffs, duplicates, mappings, diff stores and exports, bulk jobs,
-the vault and encrypted storage, routers, the SQL IDE services and dialects.
-Set `DV_TEST_PG=host:port/db/user[/password]` to also run the PostgreSQL
-reader tests (local and in-database strategies).
+The tests don't need a database. To also run the PostgreSQL reader tests, set `DV_TEST_PG=host:port/db/user[/password]`.
 
-## Observability
+Frontend unit tests (Node 22 or newer):
 
-- Every HTTP response carries an `X-Request-ID` header. Unhandled server errors
-  return a clean JSON envelope `{ "error", "detail", "request_id" }` and are
-  logged with the same id, so a user-reported failure can be traced in the logs.
-- Slow (>5s) and `5xx` responses are logged with timing; successful hot-path
-  requests are not, to keep logs quiet.
+```
+cd frontend
+npm test
+```
 
 ## Notes
 
-- On first launch you create a master password. Saved passwords, history, diffs and templates are encrypted with it; keep the recovery key it shows. Passwords saved by older versions are re-encrypted automatically and the old `backend/.secret_key` is deleted.
-- The Oracle driver uses `oracledb` in thin mode (no Oracle Instant Client needed).
-- The SQL Server driver uses `pyodbc` and requires the Microsoft ODBC Driver for SQL Server installed on the host running the backend.
-- For very large tables on one connection, the in-database strategy is chosen automatically (DV_PUSHDOWN_MIN_ROWS); a row limit per side gives a quick sampled check.
-- SQL IDE sessions and results are stored in memory. Restarting the backend clears active sessions; the IDE opens a new session on the next run (a pending manual transaction is rolled back). Script text, query history and editor settings live in the browser's local storage.
+- Oracle uses `oracledb` in thin mode, so no Instant Client is needed.
+- SQL Server needs the Microsoft ODBC Driver for SQL Server on the machine that runs the backend.
+- For a quick check on a huge table, set a row limit per side.
+- SQL IDE sessions live in memory. Restarting the backend closes them and an open manual transaction is rolled back. Scripts, history and editor settings are kept in the browser.
+- If the screens feel slow, for example on a virtual desktop, go to Settings > Visual effects and pick Light.
+
+## License
+
+MIT

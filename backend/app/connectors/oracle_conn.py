@@ -20,14 +20,14 @@ class OracleConnector(Connector):
 
         # Fetch LOBs inline with the row instead of via separate round-trips.
         # For tables with CLOB/BLOB columns, this eliminates 1 extra network
-        # call per LOB per row — massive throughput win on wide tables.
+        # call per LOB per row - massive throughput win on wide tables.
         try:
             oracledb.defaults.fetch_lobs = False
         except Exception:
             pass
 
         # Read connection-robustness settings (env-tunable via DV_CONNECT_TIMEOUT
-        # etc. — see app.config).
+        # etc. - see app.config).
         try:
             from app.config import settings
             connect_timeout = int(getattr(settings, "connect_timeout", 30) or 30)
@@ -55,7 +55,7 @@ class OracleConnector(Connector):
             user=self.record.username,
             password=decrypt(self.record.password_enc),
             dsn=dsn,
-            # Fail fast on dead network — was infinite before. With this set,
+            # Fail fast on dead network - was infinite before. With this set,
             # a wrong host or firewall block raises after `connect_timeout`
             # seconds instead of hanging the request thread for minutes.
             tcp_connect_timeout=connect_timeout,
@@ -75,7 +75,7 @@ class OracleConnector(Connector):
         oracledb.defaults.arraysize = 10000
         oracledb.defaults.prefetchrows = 10001
 
-        # Per-statement timeout — abort queries running longer than N
+        # Per-statement timeout - abort queries running longer than N
         # seconds. callTimeout is in MILLISECONDS in oracledb. 0 disables.
         if query_timeout_s > 0:
             try:

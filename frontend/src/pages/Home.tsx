@@ -73,10 +73,10 @@ export function HomePage() {
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         <Stat label="Runs (30 days)" value={compactNumber(m?.total_runs ?? 0)} tone="primary" sub={<Sparkline values={(m?.daily_activity ?? []).map((d: any) => d.count)} width={150} height={26} />} />
-        <Stat label="Matched" tone="equal" value={m?.total_runs ? `${Math.round((m.success_rate ?? 0) * 100)}%` : "—"} sub={`${m?.match_count ?? 0} runs`} />
+        <Stat label="Matched" tone="equal" value={m?.total_runs ? `${Math.round((m.success_rate ?? 0) * 100)}%` : "-"} sub={`${m?.match_count ?? 0} runs`} />
         <Stat label="Mismatched" tone="changed" value={compactNumber(m?.mismatch_count ?? 0)} sub={`${m?.error_count ?? 0} errors`} />
         <Stat label="Rows compared" value={compactNumber(m?.total_rows_compared ?? 0)} sub={`avg ${formatDuration(m?.avg_elapsed_ms ?? 0)} per run`} />
-        <Stat label="Connections" value={conns.data?.length ?? "—"} sub={<Link to="/connections" className="text-primary hover:underline">Manage</Link>} />
+        <Stat label="Connections" value={conns.data?.length ?? "-"} sub={<Link to="/connections" className="text-primary hover:underline">Manage</Link>} />
       </div>
 
       <div className="dv-panel overflow-hidden">

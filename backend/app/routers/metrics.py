@@ -1,6 +1,6 @@
 """Dashboard metrics: aggregate stats over compare runs.
 
-Read-only aggregates for a dashboard view — totals, verdict breakdown,
+Read-only aggregates for a dashboard view - totals, verdict breakdown,
 recent activity, and per-engine usage. All derived from the ``compare_runs``
 table; nothing here mutates state.
 """

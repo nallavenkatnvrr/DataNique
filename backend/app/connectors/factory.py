@@ -46,13 +46,13 @@ SUPPORTED_DB_TYPES = ["snowflake", "oracle", "sqlserver", "postgres", "mysql"]
 # Edit/delete of a connection record evicts ALL purposes for that record.
 #
 # Default purposes used across the codebase:
-#   - "sql_ide:<session_id>" — isolated SQL IDE tab execution/session state
-#   - "sql_ide"   — SQL IDE generation helpers
-#   - "compare"   — Compare engines (DuckDB / Pandas / Spark / Trino)
-#   - "metadata"  — list databases/schemas/tables/columns + Snowflake context
-#   - "test"      — Test Connection endpoint (kept separate so failed tests
+#   - "sql_ide:<session_id>" - isolated SQL IDE tab execution/session state
+#   - "sql_ide"   - SQL IDE generation helpers
+#   - "compare"   - Compare engines (DuckDB / Pandas / Spark / Trino)
+#   - "metadata"  - list databases/schemas/tables/columns + Snowflake context
+#   - "test"      - Test Connection endpoint (kept separate so failed tests
 #                   don't poison the operational sessions)
-#   - "default"   — fallback if a caller doesn't specify
+#   - "default"   - fallback if a caller doesn't specify
 #
 # Snowflake-specific note: with token caching (client_store_temporary_
 # credential=True) the first SSO browser pop covers ALL purposes for that
@@ -124,7 +124,7 @@ def get_connector(record: ConnectionRecord, purpose: str = "default") -> Connect
     isolated DB session. Callers should pass one of the well-known purpose
     strings ("sql_ide", "compare", "metadata", "test") so the maintenance
     behaviour (heartbeat, eviction, logging) can reason about them. Custom
-    strings work too — they just become their own slot.
+    strings work too - they just become their own slot.
 
     ``record.id <= 0`` (used by the "test unsaved connection" endpoint) is
     treated as uncacheable - each call builds a fresh Connector that the
@@ -169,7 +169,7 @@ def get_connector(record: ConnectionRecord, purpose: str = "default") -> Connect
             pass
 
     # Lazy-start the background heartbeat the first time we cache
-    # anything. Idempotent — safe to call repeatedly.
+    # anything. Idempotent - safe to call repeatedly.
     _start_heartbeat_thread()
 
     return new_connector
@@ -185,8 +185,8 @@ def get_connector(record: ConnectionRecord, purpose: str = "default") -> Connect
 #
 # Pool slots are stored in the regular cache under purposes "compare#0",
 # "compare#1", ... so eviction (which matches on record_id) and the heartbeat
-# both pick them up for free. Snowflake is excluded — extra sessions risk an
-# SSO browser pop-up — and always uses the single shared "compare" slot.
+# both pick them up for free. Snowflake is excluded - extra sessions risk an
+# SSO browser pop-up - and always uses the single shared "compare" slot.
 # --------------------------------------------------------------------------
 
 _POOLABLE_PURPOSES = {"compare"}
@@ -204,7 +204,7 @@ def _pool_enabled() -> tuple[bool, int]:
 def _get_pooled_connector(record: ConnectionRecord, purpose: str) -> Connector:
     """Return an idle connector from the (record, purpose) pool, growing it up
     to ``pool_size``. If every slot is busy, fall back to the least-recently
-    contended slot (round-robin) so callers never block here — the connector's
+    contended slot (round-robin) so callers never block here - the connector's
     own lock still serializes actual query execution on that slot.
     """
     _enabled, pool_size = _pool_enabled()
@@ -234,7 +234,7 @@ def _get_pooled_connector(record: ConnectionRecord, purpose: str) -> Connector:
         lock = getattr(conn, "_conn_lock", None)
         if lock is None:
             return conn
-        # Probe without blocking — if free right now, take it.
+        # Probe without blocking - if free right now, take it.
         if lock.acquire(timeout=0.0):
             lock.release()
             return conn
@@ -247,7 +247,7 @@ def _get_pooled_connector(record: ConnectionRecord, purpose: str) -> Connector:
             next_slot += 1
         return get_connector(record, purpose=f"{purpose}#{next_slot}")
 
-    # 3) All slots busy — round-robin to spread load (execution still
+    # 3) All slots busy - round-robin to spread load (execution still
     #    serializes on whichever slot's lock, but never blocks here).
     import random
     chosen = random.choice(existing_slots) if existing_slots else 0
@@ -274,7 +274,7 @@ def get_compare_connector(
     because they match on ``record_id``.
 
     When the opt-in pool (``DV_CONNECTION_POOL_ENABLED``) is also on, the
-    pool logic runs on top of the role-scoped purpose — the two features
+    pool logic runs on top of the role-scoped purpose - the two features
     compose safely.
     """
     purpose = f"compare#{role}" if role else "compare"
@@ -296,7 +296,7 @@ def evict_connector(connection_id: int, purpose: str | None = None, force: bool 
 
     If ``purpose`` is None (the default), ALL purposes for this record
     are evicted. This is what router code wants on connection edit/delete
-    — every cached derivative of that record must go.
+    - every cached derivative of that record must go.
 
     Pass a specific purpose only when you want to surgically invalidate
     just one slot (e.g. an SQL IDE session ended and is being cleaned up).
@@ -384,7 +384,7 @@ def evict_all(force: bool = True) -> None:
 # may have already closed it.
 #
 # Our existing ``validate_before_use`` ping catches this lazily on the
-# next use — but a fresh login takes several seconds and (for SSO) can
+# next use - but a fresh login takes several seconds and (for SSO) can
 # pop a browser. Better to send a cheap ``SELECT 1`` proactively every
 # few minutes so the connection never goes silent.
 #
@@ -408,7 +408,7 @@ _last_heartbeat_per_key: dict[tuple[int, str], float] = {}
 
 def get_cache_snapshot() -> list[dict]:
     """Read-only snapshot of the connector cache for diagnostics. No
-    locks held while returning — caller gets immutable point-in-time
+    locks held while returning - caller gets immutable point-in-time
     data."""
     with _cache_lock:
         entries = list(_connector_cache.items())
@@ -417,7 +417,7 @@ def get_cache_snapshot() -> list[dict]:
     for (record_id, purpose), (connector, fp) in entries:
         last_hb = _last_heartbeat_per_key.get((record_id, purpose))
         lock = getattr(connector, "_conn_lock", None)
-        # Probe lock without blocking — tells us if a query is in flight
+        # Probe lock without blocking - tells us if a query is in flight
         in_use = False
         if lock is not None:
             in_use = not lock.acquire(timeout=0.0)
@@ -436,14 +436,14 @@ def get_cache_snapshot() -> list[dict]:
 
 
 def is_heartbeat_alive() -> bool:
-    """For diagnostics — whether the background heartbeat thread is running."""
+    """For diagnostics - whether the background heartbeat thread is running."""
     return _heartbeat_thread is not None and _heartbeat_thread.is_alive()
 
 
 def _heartbeat_loop() -> None:
     """Main heartbeat loop. Wrapped in a defensive try/except at every
     level so an unexpected exception in ONE iteration doesn't silently
-    kill the whole thread — the watchdog can also restart it if it
+    kill the whole thread - the watchdog can also restart it if it
     does die. We log every crash so it's never invisible."""
     import logging
     log = logging.getLogger("dv.heartbeat")
@@ -488,7 +488,7 @@ def _heartbeat_loop() -> None:
                         # NOTE: ping success and timestamp recording are
                         # split into TWO try blocks. Bookkeeping failures
                         # (e.g., a future bug in _last_heartbeat_per_key)
-                        # must NEVER look like a ping failure — that would
+                        # must NEVER look like a ping failure - that would
                         # cause us to drop a perfectly healthy connection.
                         # See phase 4.24: this was the exact bug that
                         # silently killed cached connectors when a missing
@@ -508,7 +508,7 @@ def _heartbeat_loop() -> None:
                                     pass
                         except Exception as ping_exc:
                             log.warning(
-                                "Connector %s ping failed: %s — dropping cached conn",
+                                "Connector %s ping failed: %s - dropping cached conn",
                                 cache_key, ping_exc,
                             )
                             try:
@@ -530,10 +530,10 @@ def _heartbeat_loop() -> None:
                     finally:
                         lock.release()
                 except Exception as inner_exc:
-                    # Single-connector failure — log and continue, never propagate.
+                    # Single-connector failure - log and continue, never propagate.
                     log.exception("Heartbeat error for %s: %s", cache_key, inner_exc)
         except Exception as outer_exc:
-            # Catastrophic per-iteration failure — log and keep looping.
+            # Catastrophic per-iteration failure - log and keep looping.
             # The thread MUST NOT die silently.
             log.exception("Heartbeat iteration crashed (continuing): %s", outer_exc)
             # Brief pause so a wedged failure doesn't tight-loop
@@ -654,7 +654,7 @@ def db_type_metadata() -> list[dict]:
                 {"key": "password", "label": "Password", "required": False, "secret": True,
                  "placeholder": "ignored for Windows/Integrated/MSI modes"},
                 {"key": "extra.domain", "label": "Domain (NTLM)", "required": False,
-                 "placeholder": "e.g. CORP — only for NTLM auth",
+                 "placeholder": "e.g. CORP - only for NTLM auth",
                  "help": "NTLM domain. Folded into the username as DOMAIN\\user."},
                 {"key": "extra.use_integrated_security", "label": "Use integrated security (NTLM)",
                  "type": "boolean", "default": False,

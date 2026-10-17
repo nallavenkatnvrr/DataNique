@@ -137,7 +137,7 @@ async function startBackend() {
       backendPort = 8000;
       return;
     } catch {
-      /* none running — spawn our own below */
+      /* none running - spawn our own below */
     }
   }
 
