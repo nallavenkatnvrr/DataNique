@@ -11,6 +11,7 @@ browser to bundle. Everything installs from PyPI.
 | `app.py` | Runs the launcher from source (`start-app.bat` uses it) |
 | `datanique.spec` | PyInstaller recipe for the portable `Datanique.exe` |
 | `build-exe.bat` | Builds, self-tests and zips the portable app on Windows |
+| `requirements-desktop.txt` | pywebview, pythonnet and python-dotenv |
 | `datanique.ico` | App icon |
 
 ## Portable Datanique.exe
@@ -21,7 +22,7 @@ Build it on Windows from the repository root:
 desktop_py\build-exe.bat
 ```
 
-It needs Python 3.12 on PATH, and Node.js 20+ only if `frontend\dist` is not
+It needs Python 3.10 to 3.14 on PATH (it reuses `backend\.venv` if it exists), and Node.js 20+ only if `frontend\dist` is not
 built yet. The script creates `backend\.venv` if needed, installs the
 requirements plus pywebview and PyInstaller, freezes the app, runs
 `Datanique.exe --self-test` and zips it:
@@ -39,8 +40,11 @@ start, so it is not offered.
 
 To include the DuckDB PostgreSQL / MySQL scanners and httpfs for PCs without
 internet access, put them in `backend\duckdb_extensions` before building (see
-the README there). The GitHub workflow (`.github/workflows/desktop.yml`) does
-this and builds the zip on every push; releases get the zip attached.
+the README there).
+
+If the self-test fails, the script prints the exe's log
+(`logs\datanique.log` in the test data folder) and `self-test.json`, which
+names the check that failed.
 
 The build never contains a database, vault, `.env` or key file: the spec
 filters them out even if they sit in the source tree.

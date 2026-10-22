@@ -1,10 +1,11 @@
 @echo off
-rem Builds the portable Windows app:
+rem Builds the portable Windows app on this PC:
 rem   desktop_py\dist\Datanique\Datanique.exe              (the app folder)
 rem   desktop_py\dist\Datanique-<version>-windows-portable.zip
 rem
-rem Needs Python 3.12 (python on PATH) and, unless frontend\dist is already
-rem built, Node.js 20 or newer. Everything else comes from PyPI.
+rem Needs Python 3.10 to 3.14 ("python" on PATH, or py -3.14) and, unless
+rem frontend\dist is already built, Node.js 20 or newer. Everything else
+rem comes from PyPI. Uses backend\.venv, the same environment start-app.bat uses.
 setlocal EnableExtensions
 cd /d "%~dp0.."
 set "ROOT=%CD%"
@@ -14,11 +15,12 @@ if not exist "%PY%" (
     echo Creating backend\.venv
     python -m venv "%ROOT%\backend\.venv" || goto :fail
 )
+"%PY%" -c "import sys; print('Python', sys.version.split()[0]); sys.exit(0 if (3, 10) <= sys.version_info[:2] <= (3, 14) else 1)" || (echo Datanique needs Python 3.10 to 3.14. & goto :fail)
 
 echo.
 echo === Python packages
 "%PY%" -m pip install --disable-pip-version-check -q --upgrade pip || goto :fail
-"%PY%" -m pip install --disable-pip-version-check -q -r "%ROOT%\backend\requirements.txt" pywebview==5.4 python-dotenv==1.0.1 pyinstaller==6.16.0 || goto :fail
+"%PY%" -m pip install --disable-pip-version-check -q -r "%ROOT%\backend\requirements.txt" -r "%ROOT%\desktop_py\requirements-desktop.txt" pyinstaller==6.16.0 || goto :fail
 
 echo.
 echo === User interface
@@ -39,12 +41,23 @@ echo === Freezing (takes a few minutes)
 
 echo.
 echo === Self-test
+rem Runs the new exe against a throw-away data folder, at most 5 minutes.
 set "TESTDIR=%TEMP%\datanique-selftest-%RANDOM%"
-start "" /wait "%ROOT%\desktop_py\dist\Datanique\Datanique.exe" --self-test --data-dir "%TESTDIR%"
+set "DNQ_EXE=%ROOT%\desktop_py\dist\Datanique\Datanique.exe"
+set "DNQ_TEST=%TESTDIR%"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$p = Start-Process -FilePath $env:DNQ_EXE -ArgumentList ('--self-test --data-dir ' + [char]34 + $env:DNQ_TEST + [char]34) -PassThru; $null = $p.Handle; if (-not $p.WaitForExit(300000)) { $p.Kill(); exit 99 }; exit $p.ExitCode"
 set "RC=%ERRORLEVEL%"
-type "%TESTDIR%\self-test.json" 2>nul
+if not "%RC%"=="0" (
+    echo.
+    echo Self-test failed with code %RC%. Its log:
+    type "%TESTDIR%\logs\datanique.log" 2>nul
+    type "%TESTDIR%\self-test.json" 2>nul
+    echo.
+    echo The log is also in %TESTDIR%
+    goto :fail
+)
+echo Passed.
 rmdir /s /q "%TESTDIR%" 2>nul
-if not "%RC%"=="0" (echo Self-test failed with code %RC%. & goto :fail)
 
 echo.
 echo === Zip

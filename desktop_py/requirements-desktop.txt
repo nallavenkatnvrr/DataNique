@@ -1,0 +1,5 @@
+# Desktop window and the portable exe build, on top of backend/requirements.txt.
+# Python 3.10 to 3.14 (pythonnet 3.2, used by pywebview on Windows, supports 3.14).
+pywebview==5.4
+pythonnet>=3.2.1; sys_platform == "win32"
+python-dotenv==1.0.1

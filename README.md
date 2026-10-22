@@ -15,8 +15,8 @@ Databases: Snowflake, Oracle, SQL Server, PostgreSQL and MySQL. Cross-database c
 
 | | How |
 |---|---|
-| **Windows, nothing to install** | Download `Datanique-<version>-windows-portable.zip` from the [latest release](https://github.com/nallavenkatnvrr/DataNique/releases/latest), unzip it anywhere and run `Datanique.exe`. No Python, no admin rights. Every Windows user gets their own data. See [Portable app](#portable-app). |
-| **Windows with Python** | Download `datanique-<version>-app.zip` from the same release, unzip it and run `start-app.bat`. You need Python 3.10 or newer. |
+| **Windows, nothing to install** | Build `Datanique.exe` once with `desktop_py\build-exe.bat`, then copy the zip it makes to anyone. They unzip it and run `Datanique.exe`: no Python, no admin rights, and every Windows user gets their own data. See [Portable app](#portable-app). |
+| **Windows with Python** | Download `datanique-<version>-app.zip` from the [latest release](https://github.com/nallavenkatnvrr/DataNique/releases/latest), unzip it and run `start-app.bat`. You need Python 3.10 to 3.14. |
 | **Docker** | `docker run -d --name datanique -p 127.0.0.1:8000:8000 -v datanique-data:/data ghcr.io/nallavenkatnvrr/datanique:latest` then open http://localhost:8000 |
 | **From source** | `git clone https://github.com/nallavenkatnvrr/DataNique.git` and follow [Getting started](#getting-started-windows). |
 
@@ -74,7 +74,7 @@ On first start you set a master password. Saved database passwords, run history,
 
 The [user guide](docs/USER-GUIDE.md#1-install-and-first-launch) has the same steps with screenshots.
 
-You need Python 3.10 or newer (I use 3.12) and Node.js 20 or newer.
+You need Python 3.10 to 3.14 (tested on 3.12 and 3.14) and Node.js 20 or newer.
 
 Easiest way:
 
@@ -146,7 +146,7 @@ Each person who runs it gets their own data folder (connections, master password
 
 Settings > Storage shows which folder is in use. Only one Datanique runs per data folder; opening it again brings the window to the front. `--browser` opens it in your web browser instead of a window.
 
-To build it yourself on Windows run `desktop_py\build-exe.bat` (Python 3.12, plus Node.js if `frontend\dist` is not built yet). The result is in `desktop_py\dist`. More in [desktop_py/README.md](desktop_py/README.md).
+Build it on your Windows PC with `desktop_py\build-exe.bat` (Python 3.10 to 3.14, plus Node.js if `frontend\dist` is not built yet). It takes a few minutes, tests the new exe and leaves `Datanique.exe` and a zip in `desktop_py\dist`. More in [desktop_py/README.md](desktop_py/README.md).
 
 ### Offline PCs
 

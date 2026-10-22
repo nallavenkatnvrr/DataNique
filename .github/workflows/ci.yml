@@ -17,8 +17,12 @@ concurrency:
 
 jobs:
   backend:
-    name: Backend tests
+    name: Backend tests (Python ${{ matrix.python }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.12", "3.14"]
     defaults:
       run:
         working-directory: backend
@@ -32,7 +36,7 @@ jobs:
 
       - uses: actions/setup-python@v7
         with:
-          python-version: "3.12"
+          python-version: ${{ matrix.python }}
           cache: pip
           cache-dependency-path: |
             backend/requirements.txt

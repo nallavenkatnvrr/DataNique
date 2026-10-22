@@ -120,7 +120,7 @@ jobs:
             echo
             echo "## Get it"
             echo
-            echo "- **Windows, nothing to install:** download \`Datanique-${ver}-windows-portable.zip\`, unzip it anywhere and run \`Datanique.exe\`. Each Windows user gets their own data. (The Windows app workflow attaches it a few minutes after the release is created.)"
+            echo "- **Windows, nothing to install:** build \`Datanique.exe\` on your PC with \`desktop_py\\build-exe.bat\` (see the README), then share the zip it makes. Each Windows user gets their own data."
             echo "- **Windows with Python:** download \`datanique-${TAG}-app.zip\`, unzip it and run \`start-app.bat\`."
             echo "- **Docker:** \`docker run -d -p 127.0.0.1:8000:8000 -v datanique-data:/data ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/datanique:${ver}\`, then open http://localhost:8000"
             echo "- **From source:** see the README."

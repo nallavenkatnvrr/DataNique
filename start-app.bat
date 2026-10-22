@@ -9,7 +9,7 @@ if not exist .venv (
 
 .venv\Scripts\python.exe -m pip install --upgrade pip
 .venv\Scripts\python.exe -m pip install -r requirements.txt
-.venv\Scripts\python.exe -m pip install pywebview==5.4 python-dotenv==1.0.1
+.venv\Scripts\python.exe -m pip install -r "%~dp0desktop_py\requirements-desktop.txt"
 
 set "PYTHONDONTWRITEBYTECODE=1"
 

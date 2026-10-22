@@ -21,8 +21,14 @@ Date: 22 Oct 2026.
 - If the window cannot open (no WebView2), Datanique opens in the default
   browser instead. `--browser` does that on purpose.
 - Settings → Storage shows your data folder, with an Open folder button.
-- Build it yourself with `desktop_py\build-exe.bat`; GitHub builds it on
-  every push and attaches it to each release.
+- Build it on your own PC with `desktop_py\build-exe.bat`: installs the
+  packages, freezes the app, runs `Datanique.exe --self-test` (at most 5
+  minutes, its log is printed if it fails) and zips it.
+- **Python 3.14**: requirements moved to versions with ready-made Windows
+  wheels for 3.14 (pydantic 2.12, SQLAlchemy 2.0.45, cryptography 46,
+  snowflake-connector-python 4.4, pyodbc 5.3, psycopg 3.2.10, pyarrow 22+,
+  oracledb 3.3+); `desktop_py\requirements-desktop.txt` holds pywebview and
+  pythonnet 3.2. Tests pass on 3.12 and 3.14; CI runs both.
 
 # Datanique 0.3.3
 

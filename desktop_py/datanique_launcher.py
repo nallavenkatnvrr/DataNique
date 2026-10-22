@@ -48,6 +48,9 @@ from pathlib import Path
 APP_NAME = "Datanique"
 LEGACY_PORT = 38417
 _backend_server = None
+# No dialogs during --self-test: it runs unattended (build-exe.bat) and a
+# message box nobody can click would block it forever.
+QUIET = False
 
 
 # ---------------------------------------------------------------------------
@@ -250,7 +253,7 @@ def choose_port(folder: Path, wait: float = 3.0) -> int:
 # ---------------------------------------------------------------------------
 def message_box(text: str, title: str = APP_NAME, error: bool = False) -> None:
     print(f"[datanique] {text}")
-    if os.name == "nt" and is_frozen():
+    if os.name == "nt" and is_frozen() and not QUIET:
         try:
             import ctypes
 
@@ -357,11 +360,23 @@ def _wait_for_health(port: int, thread: threading.Thread, timeout: float = 90.0)
 def _self_test(port: int, folder: Path, frontend_dist: Path) -> int:
     checks: dict[str, object] = {}
 
-    def check(name: str, fn) -> None:
-        try:
-            checks[name] = {"ok": True, "detail": fn()}
-        except Exception as exc:  # report every failure, not just the first
-            checks[name] = {"ok": False, "detail": f"{type(exc).__name__}: {exc}"}
+    def check(name: str, fn, timeout: float = 60.0) -> None:
+        # Each check runs in its own thread with a time limit, so one that
+        # hangs is reported instead of stopping the self-test.
+        print(f"[self-test] {name} ...", flush=True)
+        box: dict = {}
+
+        def run() -> None:
+            try:
+                box["r"] = {"ok": True, "detail": fn()}
+            except BaseException as exc:  # report every failure, not just the first
+                box["r"] = {"ok": False, "detail": f"{type(exc).__name__}: {exc}"}
+
+        th = threading.Thread(target=run, daemon=True)
+        th.start()
+        th.join(timeout)
+        checks[name] = box.get("r") or {"ok": False, "detail": f"no answer within {timeout:.0f} s"}
+        print(f"[self-test] {name}: {'ok' if checks[name]['ok'] else 'FAILED'} {checks[name]['detail']}", flush=True)
 
     def health():
         with urllib.request.urlopen(f"http://127.0.0.1:{port}/api/health", timeout=5) as r:
@@ -494,6 +509,7 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
 
 
 def main(argv: list[str] | None = None) -> int:
+    global QUIET
     args = _parse_args(sys.argv[1:] if argv is None else argv)
     backend_dir, frontend_dist = _project_paths()
     _load_env_file(backend_dir)
@@ -504,6 +520,8 @@ def main(argv: list[str] | None = None) -> int:
     except OSError as exc:
         message_box(f"Cannot create the data folder\n{folder}\n\n{exc}", error=True)
         return 2
+    if args.self_test:
+        QUIET = True
     if is_frozen():
         redirect_output(folder)
     print(f"[datanique] data folder: {folder} ({how})")
@@ -526,7 +544,7 @@ def main(argv: list[str] | None = None) -> int:
         t = threading.Thread(target=_run_backend, args=(port,), daemon=True)
         t.start()
         try:
-            if not _wait_for_health(port, t):
+            if not _wait_for_health(port, t, timeout=60.0 if args.self_test else 90.0):
                 log = folder / "logs" / "datanique.log"
                 message_box(f"Datanique could not start.\n\nDetails are in\n{log}", error=True)
                 return 1
