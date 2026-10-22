@@ -58,7 +58,7 @@ export function TabsTrigger({ value, className, children, ...props }: TabsTrigge
       aria-selected={active}
       onClick={() => ctx.setValue(value)}
       className={cn(
-        "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
+        "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-colors duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
         active ? "bg-background text-foreground shadow" : "hover:bg-background/40",
         className
       )}
@@ -78,7 +78,7 @@ export function TabsContent({ value, className, children, ...props }: TabsConten
   if (!ctx) throw new Error("TabsContent must be used within Tabs");
   if (ctx.value !== value) return null;
   return (
-    <div className={cn("mt-4 ring-offset-background focus-visible:outline-none fade-in", className)} {...props}>
+    <div className={cn("mt-4 ring-offset-background focus-visible:outline-none", className)} {...props}>
       {children}
     </div>
   );

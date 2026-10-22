@@ -149,6 +149,8 @@ function ExportMenu({ onPick }: { onPick: (f: string) => void }) {
   );
 }
 
+const diffCache = new WeakMap<unknown[], Set<string>>();
+
 function diffList(v: unknown): string[] {
   if (Array.isArray(v)) return v as string[];
   if (typeof v === "string") {
@@ -171,8 +173,26 @@ function fmt(v: unknown): string {
 function Cell({ v, className }: { v: unknown; className?: string }) {
   if (v === null || v === undefined) return <span className={cn("italic text-muted-foreground/50", className)}>NULL</span>;
   const s = fmt(v);
-  return <span className={cn("truncate", s === "" && "italic text-muted-foreground/50", className)} title={s}>{s === "" ? "(empty)" : s}</span>;
+  return <span className={cn("truncate", s === "" && "italic text-muted-foreground/50", className)}>{s === "" ? "(empty)" : s}</span>;
 }
+
+/** Cell tooltips are set when the mouse reaches a cell instead of on every
+ *  render: changing a title attribute restyles the element in Chrome, and
+ *  scrolling reuses hundreds of cells per frame. */
+function showCellTitle(e: React.MouseEvent) {
+  const el = e.target as HTMLElement;
+  if (el.classList.contains("truncate") && el.scrollWidth > el.clientWidth && el.title !== el.textContent) el.title = el.textContent ?? "";
+}
+
+/** Text and "faint" flag for a value: NULL and empty strings are shown in
+ *  muted italics. Grid cells render as a single element each (fewer DOM
+ *  nodes to restyle while scrolling). */
+function cellText(v: unknown): [string, boolean] {
+  if (v === null || v === undefined) return ["NULL", true];
+  const s = fmt(v);
+  return s === "" ? ["(empty)", true] : [s, false];
+}
+const FAINT = "italic text-muted-foreground/50";
 
 function useEndTrigger(virt: { getVirtualItems: () => { index: number }[] }, count: number, onEnd: () => void) {
   const items = virt.getVirtualItems();
@@ -188,6 +208,11 @@ function useEndTrigger(virt: { getVirtualItems: () => { index: number }[] }, cou
  * absolutely positioned with fixed widths - no per-row CSS grid layout. The
  * row number and key columns stay pinned on the left. */
 const ROW_NUM_W = 64;
+
+function PlainCell({ v, left, width }: { v: unknown; left: number; width: number }) {
+  const [t, faint] = cellText(v);
+  return <div className={cn("absolute top-0 truncate px-2 leading-[29px]", faint && FAINT)} style={{ left, width }}>{t}</div>;
+}
 
 /* Rows are recycled through a fixed set of DOM slots instead of being
  * inserted and removed while scrolling: key = index mod window size, so the
@@ -232,7 +257,7 @@ function PlainGrid({ data, onEnd }: { data: { columns: DiffPage["columns"]; rows
   useEndTrigger(rowsV, data.rows.length, onEnd);
   const vcols = colsV.getVirtualItems();
   return (
-    <div ref={ref} className={gridBox} style={gridContain}>
+    <div ref={ref} className={gridBox} style={gridContain} onMouseOver={showCellTitle}>
       <div style={{ width: totalW, height: rowsV.getTotalSize() + 34, position: "relative" }}>
         <div className="sticky top-0 z-20 flex h-[34px] border-b bg-muted" style={{ width: totalW }}>
           <div className="sticky left-0 z-10 flex shrink-0 items-center justify-end border-r bg-muted px-2 text-muted-foreground" style={{ width: ROW_NUM_W }}>#</div>
@@ -243,19 +268,27 @@ function PlainGrid({ data, onEnd }: { data: { columns: DiffPage["columns"]; rows
             })}
           </div>
         </div>
-        {bySlot(rowsV.getVirtualItems(), slotKey).map((vr) => {
-          const r = data.rows[vr.index];
-          return (
-            <div key={slotKey(vr.index)} className="group absolute left-0 flex border-b border-border/60" style={{ top: 34, width: totalW, height: vr.size, transform: `translateY(${vr.start}px)` }}>
-              <div className="sticky left-0 z-10 flex shrink-0 items-center justify-end border-r bg-card px-2 text-muted-foreground/60 group-hover:bg-accent" style={{ width: ROW_NUM_W }}>{vr.index + 1}</div>
-              <div className="relative shrink-0 group-hover:bg-accent/40" style={{ width: scrollW }}>
-                {vcols.map((vc) => (
-                  <div key={vc.key} className="absolute top-0 flex h-full min-w-0 items-center px-2" style={{ left: vc.start - ROW_NUM_W, width: vc.size }}><Cell v={r[vc.index]} /></div>
-                ))}
-              </div>
-            </div>
-          );
-        })}
+        <div className="flex" style={{ width: totalW, height: rowsV.getTotalSize() }}>
+          {/* one pinned column for all rows (a sticky element per row would
+              give every row its own compositing layer) */}
+          <div className="sticky left-0 z-10 shrink-0 border-r bg-card" style={{ width: ROW_NUM_W, height: rowsV.getTotalSize() }}>
+            {bySlot(rowsV.getVirtualItems(), slotKey).map((vr) => (
+              <div key={slotKey(vr.index)} className="absolute inset-x-0 flex items-center justify-end border-b border-border/60 px-2 text-muted-foreground/60" style={{ top: 0, height: vr.size, transform: `translateY(${vr.start}px)` }}>{vr.index + 1}</div>
+            ))}
+          </div>
+          <div className="relative shrink-0" style={{ width: scrollW, height: rowsV.getTotalSize() }}>
+            {bySlot(rowsV.getVirtualItems(), slotKey).map((vr) => {
+              const r = data.rows[vr.index];
+              return (
+                <div key={slotKey(vr.index)} className="absolute inset-x-0 border-b border-border/60 hover:bg-accent/40" style={{ top: 0, height: vr.size, transform: `translateY(${vr.start}px)` }}>
+                  {vcols.map((vc) => (
+                    <PlainCell key={vc.key} v={r[vc.index]} left={vc.start - ROW_NUM_W} width={vc.size} />
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -273,12 +306,28 @@ function ChangedGrid({ data, onlyDiffCols, onEnd, onColumn }: {
       comps: names.filter((n) => n.startsWith("s:")).map((n) => n.slice(2)),
     };
   }, [data.columns]);
-  const diffSets = React.useMemo(() => data.rows.map((r) => new Set(diffList(r[idx.__diff]))), [data.rows, idx]);
+  // Which columns differ, per row and overall. Work is done once per row as
+  // pages arrive, not again for every loaded row on each new page.
+  const diffOf = React.useCallback((r: unknown[]) => {
+    let d = diffCache.get(r);
+    if (!d) {
+      d = new Set(diffList(r[idx.__diff]));
+      diffCache.set(r, d);
+    }
+    return d;
+  }, [idx]);
+  const colsSeen = React.useRef<{ first: unknown; n: number; set: Set<string> }>({ first: null, n: 0, set: new Set() });
   const diffCols = React.useMemo(() => {
-    const set = new Set<string>();
-    for (const d of diffSets) for (const c of d) set.add(c);
-    return set;
-  }, [diffSets]);
+    let st = colsSeen.current;
+    if (st.first !== data.rows[0] || data.rows.length < st.n) st = colsSeen.current = { first: data.rows[0], n: 0, set: new Set() };
+    let grown = false;
+    for (let i = st.n; i < data.rows.length; i++) {
+      for (const c of diffOf(data.rows[i])) if (!st.set.has(c)) { st.set.add(c); grown = true; }
+    }
+    st.n = data.rows.length;
+    if (grown || st.n === 0) st.set = new Set(st.set);
+    return st.set;
+  }, [data.rows, diffOf]);
   const shown = React.useMemo(() => {
     const filtered = comps.filter((c) => diffCols.has(c));
     return onlyDiffCols && filtered.length ? filtered : comps;
@@ -291,7 +340,7 @@ function ChangedGrid({ data, onlyDiffCols, onEnd, onColumn }: {
   useEndTrigger(rowsV, data.rows.length, onEnd);
   const vcols = colsV.getVirtualItems();
   return (
-    <div ref={ref} className={gridBox} style={gridContain}>
+    <div ref={ref} className={gridBox} style={gridContain} onMouseOver={showCellTitle}>
       <div style={{ width: totalW, height: rowsV.getTotalSize() + 34, position: "relative" }}>
         <div className="sticky top-0 z-20 flex h-[34px] border-b bg-muted" style={{ width: totalW }}>
           <div className="sticky left-0 z-10 flex shrink-0 border-r bg-muted" style={{ width: pinnedW }}>
@@ -309,33 +358,46 @@ function ChangedGrid({ data, onlyDiffCols, onEnd, onColumn }: {
             })}
           </div>
         </div>
-        {bySlot(rowsV.getVirtualItems(), slotKey).map((vr) => {
-          const r = data.rows[vr.index];
-          const d = diffSets[vr.index];
-          return (
-            <div key={slotKey(vr.index)} className="group absolute left-0 flex border-b border-border/60" style={{ top: 34, width: totalW, height: vr.size, transform: `translateY(${vr.start}px)` }}>
-              <div className="sticky left-0 z-10 flex shrink-0 border-r bg-card group-hover:bg-accent" style={{ width: pinnedW }}>
-                <div className="flex shrink-0 items-center justify-end px-2 text-muted-foreground/60" style={{ width: ROW_NUM_W }}>{vr.index + 1}</div>
-                {keys.map((k) => <div key={k} className="flex min-w-0 shrink-0 items-center px-2 font-medium" style={{ width: KEY_W }}><Cell v={r[idx["k:" + k]]} /></div>)}
-              </div>
-              <div className="relative shrink-0 group-hover:bg-accent/30" style={{ width: scrollW }}>
-                {vcols.map((vc) => {
-                  const c = shown[vc.index];
-                  const pos = { left: vc.start - pinnedW, width: vc.size };
-                  const sv = r[idx["s:" + c]];
-                  if (!d.has(c)) return <div key={vc.key} className="absolute top-0 flex h-full min-w-0 items-center px-2 text-muted-foreground" style={pos}><Cell v={sv} /></div>;
-                  const tv = r[idx["t:" + c]];
-                  return (
-                    <div key={vc.key} className="absolute top-0 flex h-full min-w-0 flex-col justify-center gap-0.5 bg-changed/10 px-2" style={pos}>
-                      <span className="flex min-w-0 items-center gap-1"><span className="h-1.5 w-1.5 shrink-0 rounded-full bg-only-src" /><Cell v={sv} className="text-only-src" /></span>
-                      <span className="flex min-w-0 items-center gap-1"><span className="h-1.5 w-1.5 shrink-0 rounded-full bg-only-tgt" /><Cell v={tv} className="text-only-tgt" /></span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
+        <div className="flex" style={{ width: totalW, height: rowsV.getTotalSize() }}>
+          <div className="sticky left-0 z-10 shrink-0 border-r bg-card" style={{ width: pinnedW, height: rowsV.getTotalSize() }}>
+            {bySlot(rowsV.getVirtualItems(), slotKey).map((vr) => {
+              const r = data.rows[vr.index];
+              return (
+                <div key={slotKey(vr.index)} className="absolute inset-x-0 flex border-b border-border/60" style={{ top: 0, height: vr.size, transform: `translateY(${vr.start}px)` }}>
+                  <div className="flex shrink-0 items-center justify-end px-2 text-muted-foreground/60" style={{ width: ROW_NUM_W }}>{vr.index + 1}</div>
+                  {keys.map((k) => <div key={k} className="flex min-w-0 shrink-0 items-center px-2 font-medium" style={{ width: KEY_W }}><Cell v={r[idx["k:" + k]]} /></div>)}
+                </div>
+              );
+            })}
+          </div>
+          <div className="relative shrink-0" style={{ width: scrollW, height: rowsV.getTotalSize() }}>
+            {bySlot(rowsV.getVirtualItems(), slotKey).map((vr) => {
+              const r = data.rows[vr.index];
+              const d = diffOf(r);
+              return (
+                <div key={slotKey(vr.index)} className="absolute inset-x-0 border-b border-border/60 hover:bg-accent/30" style={{ top: 0, height: vr.size, transform: `translateY(${vr.start}px)` }}>
+                  {vcols.map((vc) => {
+                    const c = shown[vc.index];
+                    const pos = { left: vc.start - pinnedW, width: vc.size };
+                    const sv = r[idx["s:" + c]];
+                    if (!d.has(c)) {
+                      const [t, faint] = cellText(sv);
+                      return <div key={vc.key} className={cn("absolute top-0 truncate px-2 leading-[45px] text-muted-foreground", faint && FAINT)} style={pos}>{t}</div>;
+                    }
+                    const [a, fa] = cellText(sv);
+                    const [b, fb] = cellText(r[idx["t:" + c]]);
+                    return (
+                      <div key={vc.key} className="absolute top-0 flex h-full flex-col justify-center gap-0.5 bg-changed/10 px-2" style={pos}>
+                        <div className={cn("dv-src truncate", fa && "italic")}>{a}</div>
+                        <div className={cn("dv-tgt truncate", fb && "italic")}>{b}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );

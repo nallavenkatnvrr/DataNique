@@ -384,6 +384,10 @@ export const ResultGrid = React.memo(function ResultGrid({
     }
   };
   const onMouseOver = (e: React.MouseEvent) => {
+    // Tooltips for long or NULL values are copied to `title` only when the
+    // mouse reaches the cell: changing title on every scroll restyles cells.
+    const tipEl = (e.target as HTMLElement).closest?.("[data-tip]") as HTMLElement | null;
+    if (tipEl && tipEl.title !== tipEl.dataset.tip) tipEl.title = tipEl.dataset.tip ?? "";
     if (!dragging.current) return;
     const cell = cellFromEvent(e.target);
     if (cell) setFocus(cell);
@@ -701,7 +705,7 @@ export const ResultGrid = React.memo(function ResultGrid({
                         inSel && "bg-primary/15",
                         isFocus && "dv-grid-cell-active",
                       )}
-                      title={nul ? "NULL" : text.length > 60 || text.includes("\n") ? escapeControlCharsPlain(text.slice(0, 2000)) : undefined}
+                      data-tip={nul ? "NULL" : text.length > 60 || text.includes("\n") ? escapeControlCharsPlain(text.slice(0, 2000)) : undefined}
                     >
                       <span className="overflow-hidden text-ellipsis" style={{ whiteSpace: "pre" }}>
                         {nul ? "NULL" : renderControlChars(text.length > 1000 ? text.slice(0, 1000) + "…" : text)}

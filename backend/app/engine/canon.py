@@ -34,8 +34,10 @@ CREATE OR REPLACE MACRO dv_numtxt(x) AS
   CASE WHEN x IS NULL THEN NULL ELSE
     regexp_replace(regexp_replace(CAST(x AS VARCHAR), '(\.[0-9]*?)0+$', '\1'), '\.$', '')
   END;
+CREATE OR REPLACE MACRO dv_dectxt(x) AS
+  dv_numtxt(COALESCE(CAST(TRY_CAST(x AS DECIMAL(18,10)) AS VARCHAR), CAST(TRY_CAST(x AS DECIMAL(38,10)) AS VARCHAR)));
 CREATE OR REPLACE MACRO dv_str2num(x) AS
-  COALESCE(dv_numtxt(TRY_CAST(trim(CAST(x AS VARCHAR)) AS DECIMAL(38,10))), CAST(x AS VARCHAR));
+  COALESCE(dv_dectxt(trim(CAST(x AS VARCHAR))), CAST(x AS VARCHAR));
 CREATE OR REPLACE MACRO dv_sig15(x) AS
   CASE WHEN x IS NULL OR x = 0 OR isinf(x) OR isnan(x) THEN x
        ELSE round(x, 14 - CAST(floor(log10(abs(x))) AS INTEGER)) END;
@@ -127,12 +129,15 @@ def _ts_text(e: str) -> str:
     return f"strftime({e}, '%Y-%m-%d %H:%M:%S.%f')"
 
 
+# Numbers as canonical text: the value at 10 decimals, trailing zeros
+# dropped ('012.50' and 12.5 both give '12.5'). dv_dectxt parses through
+# DECIMAL(18,10) first, which is up to 30x faster in DuckDB than
+# DECIMAL(38,10), and only falls back to the wide type for values with more
+# than 8 digits before the point; both give the same text.
 def _num_text(e: str, fam: str) -> str:
     if fam == "int":
         return f"CAST({e} AS VARCHAR)"
-    if fam == "float":
-        return f"COALESCE(dv_numtxt(TRY_CAST({e} AS DECIMAL(38,10))), CAST({e} AS VARCHAR))"
-    return f"COALESCE(dv_numtxt(TRY_CAST({e} AS DECIMAL(38,10))), CAST({e} AS VARCHAR))"
+    return f"COALESCE(dv_dectxt({e}), CAST({e} AS VARCHAR))"
 
 
 def _side_text(e: str, fam: str, target: str, n: Normalize) -> str:

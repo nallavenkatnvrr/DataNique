@@ -5,6 +5,11 @@
  * grids lag on slow or GPU-less PCs. The same defaults are declared once
  * with `@property` (non-inherited, like Tailwind's per-element reset) - the
  * approach Tailwind 4 uses - and the per-element rules are removed.
+ *
+ * Preflight's `abbr:where([title])` rule is dropped too: any rule that
+ * mentions [title] makes Chrome restyle an element every time its title
+ * changes, and virtualized grids change the title of every cell they reuse
+ * while scrolling. Datanique has no <abbr> elements.
  */
 const SELECTORS = new Set(["*, ::before, ::after", "*,::before,::after", "::backdrop"]);
 
@@ -14,6 +19,10 @@ export default function twProperties() {
     OnceExit(root, { AtRule }) {
       const vars = new Map();
       root.walkRules((rule) => {
+        if (/^abbr:where\(\[title\]\)$/.test(rule.selector.trim())) {
+          rule.remove();
+          return;
+        }
         const sel = rule.selector.replace(/\s+/g, " ").trim();
         if (!SELECTORS.has(sel) && !SELECTORS.has(rule.selector.replace(/\s+/g, ""))) return;
         const decls = rule.nodes.filter((n) => n.type === "decl");

@@ -31,6 +31,34 @@ Date: 22 Oct 2026.
   or Ctrl+B), always takes its own space, and remembers the choice.
 - Closing the window ends Datanique.exe right away (on Windows the .NET
   runtime behind the window could keep the process alive after closing).
+- **Speed pass over the whole app**, measured in Chromium with the CPU
+  slowed 4x and no graphics acceleration, 300 runs in history:
+
+  | | before | after |
+  |---|---|---|
+  | History list, scrolling | 39 fps | 52 fps |
+  | Difference grid (48 columns), scrolling down | 30 fps | 47 fps |
+  | Difference grid, scrolling sideways | 31 fps | 48 fps |
+  | Back to the SQL IDE | 148 ms | 46 ms |
+  | Compare 120,000 rows x 48 columns, text vs numbers | 60 s | 11 s |
+
+  - Difference grid: one element per cell instead of four to seven, the
+    pinned row numbers and keys are one column instead of a sticky element
+    per row, cell tooltips are set when the mouse reaches a cell, and each
+    difference row is processed once instead of again for every new page.
+  - History rows are only drawn when they scroll into view.
+  - The SQL IDE stays open in the background after the first visit, so
+    going back is instant and the editor, results and scroll position are as
+    you left them. Its shortcuts only work while it is on screen.
+  - Every page's code is loaded in the background after start-up, so the
+    first visit to a page is as quick as later ones.
+  - Tabs and switches change instantly; dialogs and menus open in about
+    0.1 s.
+  - Compare engine: text-vs-number columns are parsed through a fast decimal
+    path (about 30x quicker in DuckDB, same results), and converted values
+    are computed once for the diff and the column statistics instead of
+    twice.
+- Fixed: reloading (F5) on a run, job or batch page showed a blank page.
 - Build it on your own PC with `desktop_py\build-exe.bat`: installs the
   packages, freezes the app, runs `Datanique.exe --self-test` (at most 5
   minutes, its log is printed if it fails) and zips it.

@@ -43,9 +43,11 @@ function Runs() {
   });
   const items = runs.data?.items ?? [];
   const ref = React.useRef<HTMLDivElement>(null);
-  const virt = useVirtualizer({ count: items.length, getScrollElement: () => ref.current, estimateSize: () => 58, overscan: 12 });
-  const toggle = (u: string) => setSel((s) => { const n = new Set(s); if (n.has(u)) n.delete(u); else n.add(u); return n; });
-  const tpl = "28px 104px minmax(0,1fr) 200px 120px 90px 100px";
+  // Scrolling renders at most once per frame (no synchronous flush per
+  // scroll event); rows are memoized, so only rows entering the view render.
+  const virt = useVirtualizer({ count: items.length, getScrollElement: () => ref.current, estimateSize: () => ROW_H, overscan: 6, useFlushSync: false });
+  const toggle = React.useCallback((u: string) => setSel((s) => { const n = new Set(s); if (n.has(u)) n.delete(u); else n.add(u); return n; }), []);
+  const open = React.useCallback((u: string) => navigate(`/runs/${u}`), [navigate]);
 
   return (
     <div className="dv-panel flex min-h-[420px] flex-1 flex-col overflow-hidden">
@@ -62,7 +64,7 @@ function Runs() {
           {sel.size > 0 && <Button variant="destructive" size="sm" loading={del.isPending} onClick={() => window.confirm(`Delete ${sel.size} runs?`) && del.mutate()}><Trash2 className="h-3.5 w-3.5" /> Delete {sel.size}</Button>}
         </div>
       </div>
-      <div className="grid items-center gap-3 border-b bg-muted/40 px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" style={{ gridTemplateColumns: tpl }}>
+      <div className="grid items-center gap-3 border-b bg-muted/40 px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" style={{ gridTemplateColumns: TPL }}>
         <input type="checkbox" className="h-3.5 w-3.5 accent-[hsl(var(--primary))]" checked={!!items.length && sel.size === items.length} onChange={(e) => setSel(e.target.checked ? new Set(items.map((i) => i.run_uuid)) : new Set())} />
         <span>Verdict</span><span>Source → target</span><span>Result</span><span className="text-right">Rows</span><span className="text-right">Time</span><span className="text-right">When</span>
       </div>
@@ -73,33 +75,9 @@ function Runs() {
           <div style={{ height: virt.getTotalSize(), position: "relative" }}>
             {virt.getVirtualItems().map((vi) => {
               const r = items[vi.index];
-              const s = r.summary ?? {};
               return (
-                <div key={r.run_uuid} className={cn("absolute inset-x-0 grid cursor-pointer items-center gap-3 border-b px-4 hover:bg-accent/40", sel.has(r.run_uuid) && "bg-primary/5")}
-                  style={{ gridTemplateColumns: tpl, height: vi.size, transform: `translateY(${vi.start}px)` }}
-                  onClick={() => navigate(`/runs/${r.run_uuid}`)}>
-                  <input type="checkbox" className="h-3.5 w-3.5 accent-[hsl(var(--primary))]" checked={sel.has(r.run_uuid)} onClick={(e) => e.stopPropagation()} onChange={() => toggle(r.run_uuid)} />
-                  <VerdictBadge verdict={r.verdict || r.status} size="sm" />
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-1.5 truncate text-sm">
-                      <KindIcon kind={s.source_kind} /><span className="truncate">{r.source_label}</span>
-                      <ArrowRight className="h-3 w-3 shrink-0 text-muted-foreground" />
-                      <KindIcon kind={s.target_kind} /><span className="truncate">{r.target_label}</span>
-                    </div>
-                    {r.error && <div className="truncate text-xs text-destructive">{r.error}</div>}
-                    {r.batch_id && <Link to={`/batches/${r.batch_id}`} onClick={(e) => e.stopPropagation()} className="text-[11px] text-primary hover:underline">bulk batch</Link>}
-                  </div>
-                  <div className="space-y-1">
-                    <SpectrumBar equal={s.matching ?? 0} changed={s.changed ?? 0} onlySrc={s.only_in_source ?? 0} onlyTgt={s.only_in_target ?? 0} height={6} />
-                    <div className="flex gap-2 text-[10.5px] tabular-nums text-muted-foreground">
-                      {s.changed ? <span className="text-changed">{compactNumber(s.changed)} chg</span> : null}
-                      {s.only_in_source ? <span className="text-only-src">{compactNumber(s.only_in_source)} src</span> : null}
-                      {s.only_in_target ? <span className="text-only-tgt">{compactNumber(s.only_in_target)} tgt</span> : null}
-                    </div>
-                  </div>
-                  <span className="text-right text-xs tabular-nums text-muted-foreground">{compactNumber(s.source_rows)}</span>
-                  <span className="text-right text-xs tabular-nums text-muted-foreground">{formatDuration(r.elapsed_ms)}</span>
-                  <span className="text-right text-xs text-muted-foreground">{timeAgo(r.started_at)}</span>
+                <div key={r.run_uuid} className="absolute inset-x-0" style={{ height: ROW_H, transform: `translateY(${vi.start}px)` }}>
+                  <RunRow r={r} selected={sel.has(r.run_uuid)} onToggle={toggle} onOpen={open} />
                 </div>
               );
             })}
@@ -109,6 +87,45 @@ function Runs() {
     </div>
   );
 }
+
+const ROW_H = 58;
+const TPL = "28px 104px minmax(0,1fr) 200px 120px 90px 100px";
+
+type RunItem = Awaited<ReturnType<typeof runsApi.list>>["items"][number];
+
+const RunRow = React.memo(function RunRow({ r, selected, onToggle, onOpen }: {
+  r: RunItem; selected: boolean; onToggle: (u: string) => void; onOpen: (u: string) => void;
+}) {
+  const s = r.summary ?? {};
+  return (
+    <div className={cn("grid h-full cursor-pointer items-center gap-3 border-b px-4 hover:bg-accent/40", selected && "bg-primary/5")}
+      style={{ gridTemplateColumns: TPL, contain: "layout style paint" }}
+      onClick={() => onOpen(r.run_uuid)}>
+      <input type="checkbox" className="h-3.5 w-3.5 accent-[hsl(var(--primary))]" checked={selected} onClick={(e) => e.stopPropagation()} onChange={() => onToggle(r.run_uuid)} />
+      <VerdictBadge verdict={r.verdict || r.status} size="sm" />
+      <div className="min-w-0">
+        <div className="flex items-center gap-1.5 truncate text-sm">
+          <KindIcon kind={s.source_kind} /><span className="truncate">{r.source_label}</span>
+          <ArrowRight className="h-3 w-3 shrink-0 text-muted-foreground" />
+          <KindIcon kind={s.target_kind} /><span className="truncate">{r.target_label}</span>
+        </div>
+        {r.error && <div className="truncate text-xs text-destructive">{r.error}</div>}
+        {r.batch_id && <Link to={`/batches/${r.batch_id}`} onClick={(e) => e.stopPropagation()} className="text-[11px] text-primary hover:underline">bulk batch</Link>}
+      </div>
+      <div className="space-y-1">
+        <SpectrumBar equal={s.matching ?? 0} changed={s.changed ?? 0} onlySrc={s.only_in_source ?? 0} onlyTgt={s.only_in_target ?? 0} height={6} />
+        <div className="flex gap-2 text-[10.5px] tabular-nums text-muted-foreground">
+          {s.changed ? <span className="text-changed">{compactNumber(s.changed)} chg</span> : null}
+          {s.only_in_source ? <span className="text-only-src">{compactNumber(s.only_in_source)} src</span> : null}
+          {s.only_in_target ? <span className="text-only-tgt">{compactNumber(s.only_in_target)} tgt</span> : null}
+        </div>
+      </div>
+      <span className="text-right text-xs tabular-nums text-muted-foreground">{compactNumber(s.source_rows)}</span>
+      <span className="text-right text-xs tabular-nums text-muted-foreground">{formatDuration(r.elapsed_ms)}</span>
+      <span className="text-right text-xs text-muted-foreground">{timeAgo(r.started_at)}</span>
+    </div>
+  );
+});
 
 function Batches() {
   const q = useQuery({ queryKey: ["batches"], queryFn: runsApi.batches, refetchInterval: 10_000 });

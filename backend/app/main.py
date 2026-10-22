@@ -315,7 +315,7 @@ app.include_router(vault_router.router)
 # in dev). The mount is added LAST, after all /api routers, so API routes always
 # take precedence; a catch-all returns index.html for client-side routes.
 # ---------------------------------------------------------------------------
-def _mount_spa() -> None:
+def _mount_spa(target=None, static_dir: str | None = None) -> None:
     import os
     import gzip
     import logging
@@ -326,7 +326,8 @@ def _mount_spa() -> None:
 
     logger = logging.getLogger(__name__)
 
-    static_dir = os.environ.get("DV_STATIC_DIR", "")
+    target = target if target is not None else app
+    static_dir = static_dir if static_dir is not None else os.environ.get("DV_STATIC_DIR", "")
     dist = Path(static_dir) if static_dir else settings.backend_dir.parent / "frontend" / "dist"
     dist = dist.resolve()
     index = dist / "index.html"
@@ -410,20 +411,32 @@ def _mount_spa() -> None:
                 return FileResponse(gz, media_type=media, headers={"Content-Encoding": "gzip", "Vary": "Accept-Encoding"})
         return FileResponse(path, media_type=media, headers={"Vary": "Accept-Encoding"})
 
-    @app.get("/", include_in_schema=False)
+    @target.get("/", include_in_schema=False)
     def _spa_root(request: Request):
         return _negotiate(index, request)
 
     # SPA fallback: any non-/api path that maps to a real build file is served
     # (compression-negotiated); anything else returns index.html so deep links /
     # refreshes resolve to the client router.
-    @app.get("/{full_path:path}", include_in_schema=False)
+    @target.get("/{full_path:path}", include_in_schema=False)
     def _spa_fallback(full_path: str, request: Request):
         if full_path == "api" or full_path.startswith("api/"):
             return JSONResponse({"detail": "Not found"}, status_code=404)
         candidate = dist / full_path
         if _within(candidate) and candidate.is_file():
             return _negotiate(candidate, request)
+        # The build references its files relatively (./assets/...), so after a
+        # reload on a nested page such as /runs/<id> the browser asks for
+        # /runs/assets/<file>. Serve the real file instead of index.html,
+        # which would leave a blank page.
+        parts = full_path.split("/")
+        if len(parts) > 1:
+            if "assets" in parts:
+                alt = dist.joinpath(*parts[parts.index("assets"):])
+            else:
+                alt = dist / parts[-1]
+            if _within(alt) and alt.is_file() and alt.suffix:
+                return _negotiate(alt, request)
         return _negotiate(index, request)
 
 

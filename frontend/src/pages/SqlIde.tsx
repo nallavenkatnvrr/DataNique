@@ -69,7 +69,10 @@ const MAX_COLUMN_TABLES = 12;
 
 type SaveDialogState = { tabId: string; name: string; saving: boolean } | null;
 
-export function SqlIdePage() {
+/** `active` is false while another page is shown: the IDE stays mounted
+ *  (instant to come back to, editor and results as they were) but ignores
+ *  keyboard shortcuts and hands the zen layout back. */
+export function SqlIdePage({ active = true }: { active?: boolean } = {}) {
   const qc = useQueryClient();
   const connsQuery = useQuery({ queryKey: ["connections"], queryFn: api.listConnections, staleTime: 30_000 });
   const connections = connsQuery.data ?? EMPTY_CONNS;
@@ -115,16 +118,20 @@ export function SqlIdePage() {
 
   // ---- lifecycle ----------------------------------------------------------------
   React.useEffect(() => {
-    pageState.mounted = true;
     return () => {
       pageState.mounted = false;
       setCursorInfo(null);
     };
   }, []);
+  const activeRef = React.useRef(active);
+  activeRef.current = active;
+  React.useEffect(() => {
+    pageState.mounted = active;
+  }, [active]);
 
   React.useEffect(() => {
-    window.dispatchEvent(new CustomEvent("dv:zen", { detail: zen }));
-  }, [zen]);
+    window.dispatchEvent(new CustomEvent("dv:zen", { detail: active && zen }));
+  }, [zen, active]);
   React.useEffect(() => () => void window.dispatchEvent(new CustomEvent("dv:zen", { detail: false })), []);
 
   // ---- completion data -------------------------------------------------------------
@@ -659,7 +666,7 @@ export function SqlIdePage() {
   // Page-level shortcuts (the editor handles its own keys first).
   React.useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.defaultPrevented) return;
+      if (e.defaultPrevented || !activeRef.current) return;
       const target = e.target as HTMLElement | null;
       if (target?.closest(".cm-editor")) return; // CodeMirror keymap already ran
       if (target?.closest("[role=dialog],[role=alertdialog],[role=menu]")) return;

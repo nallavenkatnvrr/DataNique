@@ -546,13 +546,22 @@ def run_compare(spec: CompareSpec, rc: RunContext) -> dict:
                 "(not compared, not part of the verdict)"
             )
 
+        # When a column needs converting to compare (text vs number, number
+        # formats, trims...), the converted values are computed once into a
+        # temp table: the duplicate check, the diff and the column statistics
+        # all read them. Plain column-to-column pairs stay a view (no copy).
+        converted = any(
+            p.plan.s_expr != canon.qi(p.source) or p.plan.t_expr != canon.qi(p.target) for p in keys + comps
+        )
+
         def view(raw: str, side: str) -> str:
             parts = ["rowid AS __rid"]
             for i, p in enumerate(keys):
                 parts.append(f"{p.plan.s_expr if side == 's' else p.plan.t_expr} AS k{i}")
             for i, p in enumerate(comps):
                 parts.append(f"{p.plan.s_expr if side == 's' else p.plan.t_expr} AS c{i}")
-            return f"CREATE OR REPLACE TEMP VIEW {side} AS SELECT {', '.join(parts)} FROM {raw}"
+            kind = "TABLE" if converted else "VIEW"
+            return f"CREATE OR REPLACE TEMP {kind} {side} AS SELECT {', '.join(parts)} FROM {raw}"
 
         con.execute(view("src_raw", "s"))
         con.execute(view("tgt_raw", "t"))

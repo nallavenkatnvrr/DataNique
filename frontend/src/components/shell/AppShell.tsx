@@ -15,7 +15,7 @@ import { compactNumber, useLocalState } from "@/components/kit";
 import { lockNow } from "@/components/vault/VaultGate";
 import { useTheme } from "@/context/ThemeContext";
 import { phaseLabel, useActiveJobs } from "@/lib/jobs";
-import { prefetchRoute } from "@/lib/routePrefetch";
+import { preloadAllRoutes, prefetchRoute } from "@/lib/routePrefetch";
 import { cn } from "@/lib/utils";
 import { CommandMenu } from "./CommandMenu";
 import { NAV } from "./nav";
@@ -30,6 +30,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const shortcuts = useKeyboardShortcutsDialog();
   const [zen, setZen] = React.useState(false);
   const ide = loc.pathname.startsWith("/sql-ide");
+
+  React.useEffect(() => { preloadAllRoutes(); }, []);
 
   React.useEffect(() => {
     const onZen = (e: Event) => setZen(Boolean((e as CustomEvent<boolean>).detail));

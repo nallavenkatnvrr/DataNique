@@ -60,7 +60,7 @@ export function OptionsEditor({ value, onChange, sameConnection }: { value: Comp
         <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", adv && "rotate-180")} /> Advanced
       </button>
       {adv && (
-        <div className="grid gap-4 md:grid-cols-3 fade-in">
+        <div className="grid gap-4 md:grid-cols-3">
           <Field label="Row limit per side" hint="0 = all rows (sampling for a quick check)">
             <input type="number" min={0} className="dv-input" value={value.max_rows ?? 0} onChange={(e) => set({ max_rows: Math.max(0, Number(e.target.value) || 0) })} />
           </Field>

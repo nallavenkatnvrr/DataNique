@@ -43,7 +43,7 @@ export function Segmented<T extends string>({
           disabled={o.disabled}
           onClick={() => onChange(o.value)}
           className={cn(
-            "inline-flex items-center gap-1.5 rounded-md font-medium transition-all disabled:opacity-40",
+            "inline-flex items-center gap-1.5 rounded-md font-medium transition-colors duration-100 disabled:opacity-40",
             size === "sm" ? "h-7 px-2.5 text-xs" : "h-8 px-3 text-[13px]",
             value === o.value ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
           )}
@@ -133,7 +133,7 @@ export function SpectrumBar({ equal = 0, changed = 0, onlySrc = 0, onlyTgt = 0, 
     <div className={cn("flex w-full gap-px overflow-hidden rounded-full bg-muted", className)} style={{ height }}>
       {total > 0 &&
         parts.filter((p) => p.n > 0).map((p) => (
-          <div key={p.t} className={cn(p.c, "transition-all")} title={`${formatNumber(p.n)} ${p.t}`}
+          <div key={p.t} className={p.c} title={`${formatNumber(p.n)} ${p.t}`}
             style={{ width: `${Math.max((p.n / total) * 100, 0.6)}%` }} />
         ))}
     </div>

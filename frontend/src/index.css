@@ -147,12 +147,20 @@
 }
 
 @layer utilities {
-  .fade-in { animation: fadeIn 0.18s ease-out; }
-  .slide-in-up { animation: slideInUp 0.22s cubic-bezier(.2,.8,.2,1); }
-  .scale-in { animation: scaleIn 0.14s ease-out; }
+  .fade-in { animation: fadeIn 0.1s ease-out; }
+  .slide-in-up { animation: slideInUp 0.14s cubic-bezier(.2,.8,.2,1); }
+  .scale-in { animation: scaleIn 0.09s ease-out; }
   .text-equal { color: hsl(var(--equal)); }
   .text-changed { color: hsl(var(--changed)); }
   .text-only-src { color: hsl(var(--only-src)); }
+  /* changed cells in the difference grid: source and target value, each with
+     a colored dot drawn by CSS instead of an extra element */
+  .dv-src, .dv-tgt { line-height: 1.25; }
+  .dv-src { color: hsl(var(--only-src)); }
+  .dv-tgt { color: hsl(var(--only-tgt)); }
+  .dv-src::before, .dv-tgt::before { content: ""; display: inline-block; width: 6px; height: 6px; margin-right: 5px; border-radius: 9999px; vertical-align: 1px; }
+  .dv-src::before { background: hsl(var(--only-src)); }
+  .dv-tgt::before { background: hsl(var(--only-tgt)); }
   .text-only-tgt { color: hsl(var(--only-tgt)); }
   .bg-equal { background-color: hsl(var(--equal)); }
   .bg-changed { background-color: hsl(var(--changed)); }
