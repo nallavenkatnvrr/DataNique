@@ -15,7 +15,8 @@ Databases: Snowflake, Oracle, SQL Server, PostgreSQL and MySQL. Cross-database c
 
 | | How |
 |---|---|
-| **Windows, ready to run** | Download `datanique-<version>-app.zip` from the [latest release](https://github.com/nallavenkatnvrr/DataNique/releases/latest), unzip it and run `start-app.bat`. You need Python 3.10 or newer. |
+| **Windows, nothing to install** | Download `Datanique-<version>-windows-portable.zip` from the [latest release](https://github.com/nallavenkatnvrr/DataNique/releases/latest), unzip it anywhere and run `Datanique.exe`. No Python, no admin rights. Every Windows user gets their own data. See [Portable app](#portable-app). |
+| **Windows with Python** | Download `datanique-<version>-app.zip` from the same release, unzip it and run `start-app.bat`. You need Python 3.10 or newer. |
 | **Docker** | `docker run -d --name datanique -p 127.0.0.1:8000:8000 -v datanique-data:/data ghcr.io/nallavenkatnvrr/datanique:latest` then open http://localhost:8000 |
 | **From source** | `git clone https://github.com/nallavenkatnvrr/DataNique.git` and follow [Getting started](#getting-started-windows). |
 
@@ -130,6 +131,22 @@ Open http://localhost:8000 and create the master password. Everything Datanique 
 - SQL Server: the image has unixODBC but not the Microsoft ODBC driver. Build your own image on top of it with `msodbcsql18` if you compare SQL Server tables.
 
 Build it yourself with `docker build -t datanique .`.
+
+### Portable app
+
+The portable zip holds `Datanique.exe` and an `_internal` folder with Python, the database drivers and the screens. Keep the two together. It runs from any folder, a USB stick or a shared drive.
+
+Each person who runs it gets their own data folder (connections, master password, history, scripts, exports, logs), so one copy on a shared drive can serve a whole team without anyone seeing someone else's connections:
+
+| Where the data goes | When |
+|---|---|
+| `%APPDATA%\Datanique\backend-data` | Default. Same folder as `start-app.bat`, so moving to the exe keeps your data. |
+| `data\<Windows user name>` beside the exe | A file called `portable` (no extension) is in the exe's folder, or you start it with `--portable`. Handy on a USB stick. |
+| Any folder you like | `Datanique.exe --data-dir "D:\Datanique data"` or the `DV_DATA_DIR` setting. |
+
+Settings > Storage shows which folder is in use. Only one Datanique runs per data folder; opening it again brings the window to the front. `--browser` opens it in your web browser instead of a window.
+
+To build it yourself on Windows run `desktop_py\build-exe.bat` (Python 3.12, plus Node.js if `frontend\dist` is not built yet). The result is in `desktop_py\dist`. More in [desktop_py/README.md](desktop_py/README.md).
 
 ### Offline PCs
 

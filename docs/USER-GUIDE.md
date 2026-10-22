@@ -16,7 +16,11 @@ Contents
 
 ## 1. Install and first launch
 
-You need Python 3.10 or newer and Node.js 20 or newer on Windows.
+**Easiest: the portable app.** Download `Datanique-<version>-windows-portable.zip` from the [latest release](https://github.com/nallavenkatnvrr/DataNique/releases/latest), unzip it (right-click > Extract All) and double-click `Datanique.exe`. Nothing else to install. Windows may show "Windows protected your PC" the first time because the exe is not signed; click More info > Run anyway.
+
+Your data goes to your own Windows account's folder, so colleagues can run the same copy and each sees only their own connections and history. Settings > Storage shows the folder. The README's [Portable app](../README.md#portable-app) section lists the other places it can keep data.
+
+**From source**, you need Python 3.10 or newer and Node.js 20 or newer on Windows.
 
 1. Get the code: download the ZIP from GitHub (Code > Download ZIP) and unzip it, or `git clone https://github.com/nallavenkatnvrr/DataNique.git`.
 2. Build the screens once:

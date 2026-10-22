@@ -115,7 +115,7 @@ async def lifespan(app: FastAPI):
         pass
 
 
-APP_VERSION = "0.3.3"
+APP_VERSION = "0.3.4"
 app = FastAPI(title=settings.app_name, version=APP_VERSION, lifespan=lifespan)
 
 
@@ -240,6 +240,7 @@ def version() -> dict:
     if _VERSION_CACHE is not None:
         return {**_VERSION_CACHE, "uptime_seconds": int(_time.time() - _START_TIME), "diff_store_encryption": _crypto_status()}
 
+    import os
     import sys
     import platform
 
@@ -270,6 +271,9 @@ def version() -> dict:
             ("pyodbc", "pyodbc"), ("snowflake-connector-python", "snowflake.connector"),
         ]},
         "readers": available_readers(),
+        # This user's data folder (database, vault, runs, scripts, logs).
+        "data_dir": str(settings.data_dir),
+        "desktop": os.environ.get("DV_DESKTOP") == "1",
     }
     return {**_VERSION_CACHE, "uptime_seconds": int(_time.time() - _START_TIME), "diff_store_encryption": _crypto_status()}
 

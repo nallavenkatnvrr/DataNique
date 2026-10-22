@@ -37,6 +37,10 @@ frontend/vite.config.*.timestamp-*.mjs
 frontend/vite.config.js.timestamp-*.mjs
 *.tsbuildinfo
 
+# ----- Desktop build output (desktop_py/build-exe.bat) -----
+desktop_py/build/
+desktop_py/dist/
+
 # ----- Editor / OS -----
 .vscode/
 .idea/
@@ -48,5 +52,5 @@ Thumbs.db
 *.tmp
 backend/jars/*.jar
 
-# DuckDB extension binaries (see backend/duckdb_extensions/README.md)
+# DuckDB extension binaries are not kept in git (see backend/duckdb_extensions/README.md)
 *.duckdb_extension

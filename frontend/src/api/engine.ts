@@ -368,6 +368,8 @@ export interface VersionInfo {
   libraries: Record<string, string | null>;
   drivers: Record<string, string | null>;
   readers: Record<string, { name: string; installed: boolean }[]>;
+  data_dir?: string;
+  desktop?: boolean;
 }
 
 export const systemApi = {

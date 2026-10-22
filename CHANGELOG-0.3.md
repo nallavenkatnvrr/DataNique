@@ -1,3 +1,29 @@
+# Datanique 0.3.4 - portable Windows app
+
+Date: 22 Oct 2026.
+
+- **Datanique.exe**: a portable Windows build. Unzip
+  `Datanique-0.3.4-windows-portable.zip` anywhere (a USB stick or a shared
+  folder works too) and run `Datanique.exe`. Python, Node.js and admin rights
+  are not needed; the window uses the WebView2 runtime that comes with
+  Windows 10 and 11. Database drivers and the DuckDB PostgreSQL / MySQL /
+  httpfs extensions are inside, so it works without internet access.
+- **Every Windows user has their own data**: connections, master-password
+  vault, run history, scripts, exports and logs go to that user's
+  `%APPDATA%\Datanique\backend-data`, the same folder `start-app.bat` uses,
+  so existing data shows up in the exe. Options: `--data-dir "D:\folder"`,
+  or a file named `portable` beside the exe to keep data in
+  `data\<user name>` next to it.
+- Only one Datanique runs per data folder; starting it again brings the
+  open window to the front. Each data folder keeps its own port, so two
+  people signed in to the same server do not collide and the SQL IDE tabs
+  survive restarts.
+- If the window cannot open (no WebView2), Datanique opens in the default
+  browser instead. `--browser` does that on purpose.
+- Settings → Storage shows your data folder, with an Open folder button.
+- Build it yourself with `desktop_py\build-exe.bat`; GitHub builds it on
+  every push and attaches it to each release.
+
 # Datanique 0.3.3
 
 Date: 17 Oct 2026.

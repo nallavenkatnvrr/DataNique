@@ -1,138 +1,108 @@
-# Datanique Desktop (pywebview)
+# Datanique desktop app
 
-A native desktop build of Datanique that works on **locked-down corporate
-networks** where Electron cannot be installed (its prebuilt binary download
-from GitHub is blocked).
+The desktop app runs the FastAPI backend on a loopback port and shows the UI
+in a native window. The window is [pywebview], which uses the WebView2
+runtime that comes with Windows 10 and 11, so there is no Electron and no
+browser to bundle. Everything installs from PyPI.
 
-Instead of Electron, this uses **[pywebview]** - a small Python package that
-renders the UI in the **WebView2 runtime already built into Windows 10/11**.
-Everything installs from **PyPI** (reachable via your corporate proxy), with
-**no GitHub binary downloads**.
-
-## Why this over Electron
-
-| | Electron | pywebview (this) |
-|---|---|---|
-| Download source | GitHub releases (**blocked here**) | PyPI (**works here**) |
-| Renderer | bundles Chromium (~150 MB) | uses built-in Windows WebView2 |
-| Language | Node | Python (already installed) |
-| Freeze to .exe | electron-builder | PyInstaller (already set up) |
-
-## How it works
-
-```
-desktop_py/app.py
-  ├─ picks a free loopback port
-  ├─ sets DV_STATIC_DIR -> frontend/dist  (so FastAPI serves the built UI)
-  ├─ starts uvicorn(app.main:app) in a background thread
-  │     the backend serves BOTH /api/* and the React SPA, same-origin
-  ├─ waits for GET /api/health
-  └─ opens a native WebView2 window at http://127.0.0.1:<port>/
-```
-
-Because the UI is served **same-origin** by the backend, the app's relative
-`/api` calls and `BrowserRouter` work unchanged - no `__API_BASE__` / HashRouter
-needed (those remain only for the Electron variant).
-
-The DB + encryption key are stored under `%APPDATA%\Datanique\backend-data` via
-`DV_DATA_DIR` / `DV_SECRET_KEY_FILE`, so they survive updates. The embedded
-backend binds to loopback and clears API/admin token gates; it relies on the
-local desktop account and must not be exposed on a network interface.
-
-## Prerequisites (already done on this machine)
-
-```powershell
-# pywebview + env-file loader (from PyPI)
-..\backend\.venv\Scripts\python.exe -m pip install pywebview==5.4 python-dotenv==1.0.1
-```
-
-Python 3.12 venv with the backend requirements is assumed at `..\backend\.venv`.
-
-## Run from source (native window)
-
-```powershell
-# from data-validator\frontend  (one-time / after UI changes)
-npm run build
-
-# from data-validator\desktop_py
-..\backend\.venv\Scripts\python.exe app.py
-```
-
-A native Datanique window opens. Closing it requests a graceful Uvicorn shutdown
-before the launcher exits. Source runs load `backend/.env` (or `.env` in the
-current directory); frozen builds load `.env` beside `Datanique.exe` (or from
-the current directory). Keep secrets in that external file, not in the build.
-
-## Freeze to a distributable .exe directory (PyInstaller)
-
-The launcher and backend must be analyzed together: `--paths` makes the backend
-package importable to PyInstaller, `--collect-all` includes packages with
-runtime-loaded modules or native data, and the hidden imports mirror
-`..\backend\datanique_backend.spec`. The backend source is not added as data.
-
-```powershell
-..\backend\.venv\Scripts\python.exe -m pip install pyinstaller
-
-# from data-validator\desktop_py
-..\backend\.venv\Scripts\python.exe -m PyInstaller `
-  --name Datanique `
-  --windowed `
-  --paths "..\backend" `
-  --add-data "..\frontend\dist;frontend_dist" `
-  --collect-all webview `
-  --collect-all uvicorn `
-  --collect-all fastapi `
-  --collect-all pydantic `
-  --collect-all pydantic_settings `
-  --collect-all sqlalchemy `
-  --collect-all cryptography `
-  --collect-all snowflake `
-  --collect-all oracledb `
-  --collect-all psycopg `
-  --collect-all pymysql `
-  --collect-all duckdb `
-  --collect-all polars `
-  --collect-all pandas `
-  --collect-all pyarrow `
-  --collect-all xlsxwriter `
-  --collect-all connectorx `
-  --collect-all xxhash `
-  --collect-all dotenv `
-  --collect-submodules app `
-  --hidden-import anyio `
-  --hidden-import h11 `
-  --hidden-import email_validator `
-  --hidden-import httptools `
-  --hidden-import websockets `
-  --hidden-import watchfiles `
-  --hidden-import pyodbc `
-  --exclude-module pyspark `
-  --exclude-module py4j `
-  app.py
-```
-
-`app.py` resolves `frontend_dist` under `sys._MEIPASS` when frozen, and
-`--paths ..\backend` lets PyInstaller package the backend's Python modules and
-their imports. Spark is intentionally unavailable in this desktop build:
-PySpark and its JVM bridge are excluded, matching the Electron backend spec.
-Output: `dist\Datanique\Datanique.exe` (one-dir). Ship that folder, or wrap it
-with an installer (Inno Setup / NSIS) if you want Start-Menu shortcuts.
-
-## Auto-update
-
-pywebview has no built-in updater (unlike electron-updater). Recommended path:
-
-- **Now (local):** distribute the built folder / installer manually.
-- **Later (internet):** add a lightweight check on startup - the app calls a
-  version endpoint (GitHub Releases API or an S3 `latest.json`), and if a newer
-  build exists, downloads the new installer and launches it. This is ~40 lines
-  and can be added when the GitHub/S3 hosting is decided.
-
-## Files
-
-| File | Purpose |
+| File | What it is |
 |---|---|
-| `app.py` | Launcher: starts backend thread + opens WebView2 window |
-| `../backend/app/main.py` `_mount_spa()` | Serves the built React UI same-origin (inert without a build) |
+| `datanique_launcher.py` | The launcher: picks the data folder and port, starts the backend, opens the window |
+| `app.py` | Runs the launcher from source (`start-app.bat` uses it) |
+| `datanique.spec` | PyInstaller recipe for the portable `Datanique.exe` |
+| `build-exe.bat` | Builds, self-tests and zips the portable app on Windows |
+| `datanique.ico` | App icon |
+
+## Portable Datanique.exe
+
+Build it on Windows from the repository root:
+
+```
+desktop_py\build-exe.bat
+```
+
+It needs Python 3.12 on PATH, and Node.js 20+ only if `frontend\dist` is not
+built yet. The script creates `backend\.venv` if needed, installs the
+requirements plus pywebview and PyInstaller, freezes the app, runs
+`Datanique.exe --self-test` and zips it:
+
+```
+desktop_py\dist\Datanique\Datanique.exe
+desktop_py\dist\Datanique\_internal\...          Python, drivers, UI
+desktop_py\dist\Datanique-<version>-windows-portable.zip
+```
+
+Ship the zip, or the whole `Datanique` folder. `Datanique.exe` does not work
+without the `_internal` folder next to it. One folder starts in a couple of
+seconds; a single-file exe would unpack 700 MB to a temp folder on every
+start, so it is not offered.
+
+To include the DuckDB PostgreSQL / MySQL scanners and httpfs for PCs without
+internet access, put them in `backend\duckdb_extensions` before building (see
+the README there). The GitHub workflow (`.github/workflows/desktop.yml`) does
+this and builds the zip on every push; releases get the zip attached.
+
+The build never contains a database, vault, `.env` or key file: the spec
+filters them out even if they sit in the source tree.
+
+## One data folder per user
+
+Everything a user creates (the metadata database `data_validator.db`, the
+master-password vault, run history and diff stores, scripts, exports, the
+window profile with the SQL IDE tabs, and `logs\datanique.log`) lives in
+their data folder. The first match wins:
+
+1. `Datanique.exe --data-dir "D:\some folder"`
+2. `DV_DATA_DIR` in the environment, or in a `.env` file beside the exe
+3. Portable mode, when a file named `portable` (or `portable.txt`) is next to
+   the exe or `--portable` is given: `<exe folder>\data\<Windows user name>`.
+   If that folder is not writable (a read-only share), it falls back to 4.
+4. `%APPDATA%\Datanique\backend-data`, the folder `start-app.bat` has always
+   used
+
+Every Windows account therefore gets its own database and its own master
+password, even when everyone starts the same copy from a shared drive.
+
+Only one Datanique runs per data folder (an OS file lock,
+`.instance.lock`, released automatically if the app crashes). Starting it a
+second time brings the open window to the front.
+
+The UI's browser storage belongs to its origin, which includes the port, so
+each data folder keeps one port (saved in `desktop.json`). Ports are shared by
+everyone signed in to a machine, which is why each folder gets its own instead
+of one fixed number. `DV_DESKTOP_PORT` overrides it.
+
+## Options
+
+```
+Datanique.exe [--data-dir FOLDER] [--portable] [--browser] [--self-test]
+```
+
+| Option | |
+|---|---|
+| `--data-dir FOLDER` | Use this data folder |
+| `--portable` | Keep data in `data\<user name>` beside the exe |
+| `--browser` | Open in the default browser; a small dialog stops it |
+| `--self-test` | Start the backend, check the UI, database, DuckDB, extensions, drivers and window libraries, write `self-test.json` to the data folder, exit 0 when everything passed |
+
+If the WebView2 window cannot open, Datanique falls back to the browser by
+itself. A `.env` beside the exe is read for other `DV_` settings (see
+`backend/app/config.py`). The embedded backend always binds to 127.0.0.1;
+the vault session token protects the API from other local users.
+
+## Run from source
+
+```
+start-app.bat
+```
+
+or, with the backend environment already set up:
+
+```
+backend\.venv\Scripts\python.exe desktop_py\app.py
+```
+
+Build the frontend first (`npm run build` in `frontend`); the backend serves
+`frontend\dist` on the same origin as the API.
 
 [pywebview]: https://pywebview.flowrl.com/

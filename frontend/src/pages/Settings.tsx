@@ -160,10 +160,34 @@ function Storage() {
   });
   if (!d) return <Spinner />;
   return (
-    <Section title="Folders" desc="SQL scripts saved from the SQL IDE and exported files.">
-      <Field label="Scripts folder"><input className="dv-input font-mono text-xs" value={d.scripts_dir} onChange={(e) => setD({ ...d, scripts_dir: e.target.value })} /></Field>
-      <Field label="Exports folder"><input className="dv-input font-mono text-xs" value={d.exports_dir} onChange={(e) => setD({ ...d, exports_dir: e.target.value })} /></Field>
-      <Button loading={save.isPending} onClick={() => save.mutate()}>Save</Button>
+    <div className="space-y-4">
+      <DataFolder />
+      <Section title="Folders" desc="SQL scripts saved from the SQL IDE and exported files.">
+        <Field label="Scripts folder"><input className="dv-input font-mono text-xs" value={d.scripts_dir} onChange={(e) => setD({ ...d, scripts_dir: e.target.value })} /></Field>
+        <Field label="Exports folder"><input className="dv-input font-mono text-xs" value={d.exports_dir} onChange={(e) => setD({ ...d, exports_dir: e.target.value })} /></Field>
+        <Button loading={save.isPending} onClick={() => save.mutate()}>Save</Button>
+      </Section>
+    </div>
+  );
+}
+
+type DesktopApi = { open_data_folder?: () => Promise<boolean> };
+
+function DataFolder() {
+  const v = useQuery({ queryKey: ["version"], queryFn: systemApi.version, staleTime: 60_000 });
+  const desktop = (window as unknown as { pywebview?: { api?: DesktopApi } }).pywebview?.api;
+  if (!v.data?.data_dir) return null;
+  return (
+    <Section title="Your data" desc="Connections, the master-password vault, run history, scripts and logs for your Windows account. Other people who run Datanique on this PC get their own folder.">
+      <div className="flex flex-wrap items-center gap-2">
+        <code className="min-w-0 flex-1 break-all rounded-lg bg-muted px-3 py-2 font-mono text-xs">{v.data.data_dir}</code>
+        {desktop?.open_data_folder && (
+          <Button variant="outline" onClick={() => void desktop.open_data_folder?.()}>Open folder</Button>
+        )}
+      </div>
+      <div className="text-xs text-muted-foreground">
+        Start Datanique.exe with <span className="font-mono">--data-dir "D:\folder"</span> to use another folder.
+      </div>
     </Section>
   );
 }
