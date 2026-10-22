@@ -47,6 +47,12 @@ from pathlib import Path
 
 APP_NAME = "Datanique"
 LEGACY_PORT = 38417
+_T0 = time.time()
+
+
+def _since() -> str:
+    return f"+{time.time() - _T0:.1f}s"
+
 _backend_server = None
 # No dialogs during --self-test: it runs unattended (build-exe.bat) and a
 # message box nobody can click would block it forever.
@@ -476,18 +482,57 @@ class _JsApi:
             return False
 
 
-def _show_window(port: int, folder: Path) -> None:
+_SPLASH = """<!doctype html><html><head><meta charset="utf-8"><style>
+:root{color-scheme:light dark;--bg:#ffffff;--fg:#1f2430;--muted:#6b7280;--accent:#4f46e5}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1117;--fg:#e6e8ee;--muted:#8b93a7;--accent:#818cf8}}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 "Segoe UI",system-ui,sans-serif}
+body{display:grid;place-items:center}
+.box{display:grid;justify-items:center;gap:14px}
+.name{font-size:22px;font-weight:600;letter-spacing:-.01em}
+.msg{color:var(--muted);font-size:13px}
+.bar{width:180px;height:3px;border-radius:3px;background:color-mix(in srgb,var(--accent) 18%,transparent);overflow:hidden}
+.bar i{display:block;width:40%;height:100%;border-radius:3px;background:var(--accent);animation:m 1.1s ease-in-out infinite}
+@keyframes m{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}
+</style></head><body><div class="box"><div class="name">Datanique</div><div class="bar"><i></i></div><div class="msg" id="m">Starting</div></div></body></html>"""
+
+
+def _error_page(log: Path) -> str:
+    import html
+
+    return (
+        _SPLASH.replace('<div class="bar"><i></i></div>', "")
+        .replace('id="m">Starting', 'id="m">Datanique could not start.<br>Details are in<br>' + html.escape(str(log)))
+    )
+
+
+def _show_window(port: int, folder: Path, backend: threading.Thread) -> None:
+    """Open the window at once with a small start screen and switch to the
+    app when the backend answers. The window (WebView2) and the backend start
+    at the same time instead of one after the other."""
     import webview
 
-    webview.create_window(
+    window = webview.create_window(
         APP_NAME,
-        url=f"http://127.0.0.1:{port}/",
+        html=_SPLASH,
         width=1440,
         height=900,
         min_size=(1024, 640),
         confirm_close=False,
+        background_color="#0f1117" if _prefers_dark() else "#ffffff",
         js_api=_JsApi(folder),
     )
+    window.events.shown += lambda: print(f"[datanique] window shown {_since()}", flush=True)
+
+    def switch_to_app() -> None:
+        if _wait_for_health(port, backend):
+            print(f"[datanique] backend ready {_since()}", flush=True)
+            window.events.loaded += lambda: print(f"[datanique] page loaded {_since()}", flush=True)
+            window.load_url(f"http://127.0.0.1:{port}/")
+        else:
+            log = folder / "logs" / "datanique.log"
+            print(f"[datanique] backend did not start {_since()}", flush=True)
+            window.load_html(_error_page(log))
+
     # pywebview cancels every download unless this is on (CSV, JSON and Excel
     # exports and Diff & Merge saves all use browser downloads).
     webview.settings["ALLOW_DOWNLOADS"] = True
@@ -495,7 +540,20 @@ def _show_window(port: int, folder: Path) -> None:
     # (open SQL IDE tabs, history, theme) between launches.
     storage = folder / "webview"
     storage.mkdir(parents=True, exist_ok=True)
-    webview.start(gui=None, private_mode=False, storage_path=str(storage))
+    webview.start(switch_to_app, gui=None, private_mode=False, storage_path=str(storage))
+
+
+def _prefers_dark() -> bool:
+    """Windows app theme, so the start screen doesn't flash white in dark mode."""
+    if os.name != "nt":
+        return False
+    try:
+        import winreg
+
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize") as k:
+            return winreg.QueryValueEx(k, "AppsUseLightTheme")[0] == 0
+    except OSError:
+        return False
 
 
 def _parse_args(argv: list[str]) -> argparse.Namespace:
@@ -543,22 +601,25 @@ def main(argv: list[str] | None = None) -> int:
         _configure_env(port, folder, backend_dir, frontend_dist)
         t = threading.Thread(target=_run_backend, args=(port,), daemon=True)
         t.start()
+        fell_back = False
         try:
+            if not args.self_test and not args.browser:
+                try:
+                    _show_window(port, folder, t)
+                    return 0
+                except Exception as exc:
+                    # No WebView2 runtime (rare on Windows 10/11): use the browser.
+                    print(f"[datanique] native window failed: {exc!r}")
+                    fell_back = True
             if not _wait_for_health(port, t, timeout=60.0 if args.self_test else 90.0):
                 log = folder / "logs" / "datanique.log"
                 message_box(f"Datanique could not start.\n\nDetails are in\n{log}", error=True)
                 return 1
+            print(f"[datanique] backend ready {_since()}", flush=True)
             if args.self_test:
                 return _self_test(port, folder, frontend_dist)
-            if args.browser:
-                _browser_mode(port)
-                return 0
-            try:
-                _show_window(port, folder)
-            except Exception as exc:
-                # No WebView2 runtime (rare on Windows 10/11): use the browser.
-                print(f"[datanique] native window failed: {exc!r}")
-                _browser_mode(port, reason="The Datanique window could not open, so it opened in your web browser instead.")
+            _browser_mode(port, reason="The Datanique window could not open, so it opened in your web browser instead." if fell_back else "")
+            return 0
         finally:
             _shutdown_backend(t)
     finally:

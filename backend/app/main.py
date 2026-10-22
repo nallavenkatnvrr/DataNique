@@ -81,12 +81,19 @@ async def lifespan(app: FastAPI):
     except Exception:
         pass
     # Warm the /api/version cache off the request path. The engine/driver probe
-    # imports pandas/duckdb/polars/snowflake once (~7s cold); doing it in a
-    # daemon thread at startup means the dashboard's first version() call is
-    # already served from cache and returns in ~5ms instead of blocking.
+    # imports every database driver once (several seconds cold). It waits 20 s
+    # so those imports don't compete with the first screen for the GIL; the
+    # Settings page that needs it is rarely opened that early, and if it is,
+    # the call simply does the probe itself.
     try:
         import threading
-        threading.Thread(target=version, daemon=True).start()
+        import time as _t
+
+        def _warm_version() -> None:
+            _t.sleep(20)
+            version()
+
+        threading.Thread(target=_warm_version, daemon=True, name="dv-version-warm").start()
     except Exception:
         pass
     yield

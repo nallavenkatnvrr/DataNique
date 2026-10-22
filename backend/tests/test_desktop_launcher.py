@@ -98,3 +98,54 @@ def test_one_instance_per_data_folder(L, tmp_path):
     assert b.acquire()
     b.release()
     other.release()
+
+
+def test_window_opens_first_then_switches_to_the_app(L, tmp_path, monkeypatch):
+    """The window is created with the start screen before the backend is up,
+    and moves to the app URL once /api/health answers."""
+    import sys
+    import threading
+    import types
+
+    calls = []
+
+    class _Event:
+        def __iadd__(self, fn):
+            return self
+
+    class _Window:
+        def __init__(self):
+            self.events = types.SimpleNamespace(shown=_Event(), loaded=_Event())
+
+        def load_url(self, url):
+            calls.append(("load_url", url))
+
+        def load_html(self, html):
+            calls.append(("load_html", html))
+
+    fake = types.ModuleType("webview")
+    fake.settings = {}
+
+    def create_window(title, **kw):
+        calls.append(("create_window", "html" in kw and "Starting" in kw["html"], "url" in kw))
+        return _Window()
+
+    def start(func, **kw):
+        calls.append(("start", kw.get("storage_path")))
+        func()
+
+    fake.create_window = create_window
+    fake.start = start
+    monkeypatch.setitem(sys.modules, "webview", fake)
+
+    alive = threading.Thread(target=lambda: None)
+    monkeypatch.setattr(L, "_wait_for_health", lambda port, t, timeout=90.0: True)
+    L._show_window(23456, tmp_path, alive)
+    assert calls[0] == ("create_window", True, False)
+    assert calls[1] == ("start", str(tmp_path / "webview"))
+    assert calls[2] == ("load_url", "http://127.0.0.1:23456/")
+
+    calls.clear()
+    monkeypatch.setattr(L, "_wait_for_health", lambda port, t, timeout=90.0: False)
+    L._show_window(23456, tmp_path, alive)
+    assert calls[2][0] == "load_html" and "could not start" in calls[2][1]

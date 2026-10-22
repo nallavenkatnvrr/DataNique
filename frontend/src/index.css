@@ -339,7 +339,6 @@
 }
 
 /* Rail opened by hover floats over the page (shadow without a transition). */
-.dv-rail-float { box-shadow: 10px 0 28px -14px hsl(var(--shadow-color) / 0.45); }
 
 /* Light effects: on PCs without graphics acceleration (virtual desktops,
  * remote sessions) the browser paints in software, where shadows, blur and
@@ -350,6 +349,6 @@
   transition-delay: 0s !important;
   backdrop-filter: none !important;
 }
-.dv-lite .dv-panel, .dv-lite .dv-glow, .dv-lite .dv-rail-float, .dv-lite [class*="shadow-"] { box-shadow: none !important; }
+.dv-lite .dv-panel, .dv-lite .dv-glow, .dv-lite [class*="shadow-"] { box-shadow: none !important; }
 .dv-lite .dv-indeterminate::after, .dv-lite .dv-flow, .dv-lite .fade-in, .dv-lite .slide-in-up, .dv-lite .scale-in { animation: none !important; }
 .dv-lite .dv-grid-bg { background-image: none !important; }

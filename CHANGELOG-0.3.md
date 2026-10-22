@@ -21,6 +21,16 @@ Date: 22 Oct 2026.
 - If the window cannot open (no WebView2), Datanique opens in the default
   browser instead. `--browser` does that on purpose.
 - Settings → Storage shows your data folder, with an Open folder button.
+- The window opens at once with a small start screen and switches to the
+  app when the backend is ready (they start side by side instead of one after
+  the other). The driver scan for Settings waits 20 seconds, so it no longer
+  slows the first screen. The log notes when the window was shown, the
+  backend was ready and the page loaded.
+- Side menu: no longer opens on hover and floats over the page. It is either
+  expanded with labels or collapsed to icons (Collapse / Expand at the bottom,
+  or Ctrl+B), always takes its own space, and remembers the choice.
+- Closing the window ends Datanique.exe right away (on Windows the .NET
+  runtime behind the window could keep the process alive after closing).
 - Build it on your own PC with `desktop_py\build-exe.bat`: installs the
   packages, freezes the app, runs `Datanique.exe --self-test` (at most 5
   minutes, its log is printed if it fails) and zips it.

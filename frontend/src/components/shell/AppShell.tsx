@@ -1,11 +1,13 @@
 /**
- * App frame: icon rail (expands on hover or when pinned), top bar with the
- * command menu, live job indicator, theme and lock.
+ * App frame: side menu (expanded with labels, or collapsed to icons with
+ * tooltips; the choice is remembered), top bar with the command menu, live
+ * job indicator, theme and lock. The menu always takes its own space, so it
+ * never covers the page.
  */
 import * as React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import { Activity, Keyboard, Lock, Moon, PanelLeft, Plus, Search, Sun, X } from "lucide-react";
+import { Activity, Keyboard, Lock, Moon, PanelLeftClose, PanelLeftOpen, Plus, Search, Sun, X } from "lucide-react";
 import { jobsApi } from "@/api/engine";
 import { Logo } from "@/components/Logo";
 import { KeyboardShortcutsDialog, useKeyboardShortcutsDialog } from "@/components/KeyboardShortcutsDialog";
@@ -23,8 +25,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const { resolved, toggle } = useTheme();
-  const [pinned, setPinned] = useLocalState("dv-rail-pinned", false);
-  const [hover, setHover] = React.useState(false);
+  const [expanded, setExpanded] = useLocalState("dv-rail-expanded", true);
   const [cmd, setCmd] = React.useState(false);
   const shortcuts = useKeyboardShortcutsDialog();
   const [zen, setZen] = React.useState(false);
@@ -42,6 +43,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         e.preventDefault();
         setCmd((v) => !v);
       }
+      if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === "b" && !ide) {
+        e.preventDefault();
+        setExpanded((v: boolean) => !v);
+      }
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === "l") {
         e.preventDefault();
         void lockNow();
@@ -49,21 +54,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [ide]);
+  }, [ide, setExpanded]);
 
-  const expanded = pinned || hover;
-  // Expand on hover only after a short pause, so moving the mouse across the
-  // rail doesn't animate it open and shut.
-  const hoverTimer = React.useRef<number>();
-  const hoverIn = React.useCallback(() => {
-    window.clearTimeout(hoverTimer.current);
-    hoverTimer.current = window.setTimeout(() => setHover(true), 140);
-  }, []);
-  const hoverOut = React.useCallback(() => {
-    window.clearTimeout(hoverTimer.current);
-    setHover(false);
-  }, []);
-  React.useEffect(() => () => window.clearTimeout(hoverTimer.current), []);
   const isActive = (to: string) => (to === "/" ? loc.pathname === "/" : loc.pathname === to || loc.pathname.startsWith(to + "/"));
   const current = NAV.find((n) => isActive(n.to)) ?? (loc.pathname.startsWith("/runs") || loc.pathname.startsWith("/jobs") || loc.pathname.startsWith("/batches") ? NAV.find((n) => n.to === "/history") : undefined);
 
@@ -86,36 +78,34 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         )}>
         {active && <span className="absolute -left-2 top-1.5 h-6 w-1 rounded-r-full bg-primary" />}
         <n.icon className="h-[18px] w-[18px] shrink-0" />
-        <span className={cn("truncate transition-opacity", expanded ? "opacity-100" : "pointer-events-none opacity-0")}>{n.label}</span>
+        {expanded && <span className="truncate">{n.label}</span>}
       </Link>
     );
   };
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      {/* rail */}
-      <div className={cn("relative z-40 shrink-0 transition-[width] duration-200", pinned ? "w-56" : "w-[60px]", focus && "hidden")}>
-        <aside onMouseEnter={hoverIn} onMouseLeave={hoverOut} style={{ contain: "layout style" }}
-          className={cn("absolute inset-y-0 left-0 flex flex-col overflow-hidden border-r bg-card transition-[width] duration-150 ease-out",
-            expanded ? "w-56" : "w-[60px]", hover && !pinned && "dv-rail-float")}>
-          <div className="flex h-14 items-center gap-2.5 px-3.5">
-            <Logo className="h-8 w-8 shrink-0" />
-            <span className={cn("text-[15px] font-semibold tracking-tight transition-opacity", expanded ? "opacity-100" : "opacity-0")}>Datanique</span>
-            <button type="button" onClick={() => setPinned(!pinned)} title={pinned ? "Unpin sidebar" : "Pin sidebar"}
-              className={cn("ml-auto rounded p-1 text-muted-foreground hover:text-foreground", !expanded && "hidden")}>
-              <PanelLeft className="h-4 w-4" />
-            </button>
-          </div>
-          <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 py-2 scrollbar-thin">
-            {NAV.filter((n) => n.group === "main").map(railItem)}
-            <div className="mx-2 my-2 h-px bg-border" />
-            {NAV.filter((n) => n.group === "work").map(railItem)}
-          </nav>
-          <div className="flex flex-col gap-0.5 border-t px-2 py-2">
-            {NAV.filter((n) => n.group === "bottom").map(railItem)}
-          </div>
-        </aside>
-      </div>
+      {/* side menu: takes its own width, never floats over the page */}
+      <aside className={cn("flex shrink-0 flex-col overflow-hidden border-r bg-card", expanded ? "w-56" : "w-[60px]", focus && "hidden")}>
+        <div className="flex h-14 items-center gap-2.5 px-3.5">
+          <Logo className="h-8 w-8 shrink-0" />
+          {expanded && <span className="truncate text-[15px] font-semibold tracking-tight">Datanique</span>}
+        </div>
+        <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 py-2 scrollbar-thin">
+          {NAV.filter((n) => n.group === "main").map(railItem)}
+          <div className="mx-2 my-2 h-px bg-border" />
+          {NAV.filter((n) => n.group === "work").map(railItem)}
+        </nav>
+        <div className="flex flex-col gap-0.5 border-t px-2 py-2">
+          {NAV.filter((n) => n.group === "bottom").map(railItem)}
+          <button type="button" onClick={() => setExpanded(!expanded)}
+            title={expanded ? "Collapse menu (Ctrl+B)" : "Expand menu (Ctrl+B)"} aria-label={expanded ? "Collapse menu" : "Expand menu"}
+            className="flex h-9 items-center gap-3 rounded-lg px-2.5 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+            {expanded ? <PanelLeftClose className="h-[18px] w-[18px] shrink-0" /> : <PanelLeftOpen className="h-[18px] w-[18px] shrink-0" />}
+            {expanded && <span className="truncate">Collapse</span>}
+          </button>
+        </div>
+      </aside>
 
       {/* main */}
       <div className="flex min-w-0 flex-1 flex-col">

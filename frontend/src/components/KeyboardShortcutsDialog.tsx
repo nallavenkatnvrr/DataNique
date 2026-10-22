@@ -27,6 +27,9 @@ const EDITOR_SHORTCUTS: Shortcut[] = [
 const APP_SHORTCUTS: Shortcut[] = [
   { category: "App", keys: ["?"], description: "Show this list" },
   { category: "App", keys: ["Escape"], description: "Close dialog / menu" },
+  { category: "App", keys: ["Mod-k"], description: "Search or jump to a page" },
+  { category: "App", keys: ["Mod-b"], description: "Collapse or expand the side menu" },
+  { category: "App", keys: ["Mod-Shift-l"], description: "Lock Datanique" },
 ];
 
 const ALL: Shortcut[] = [
