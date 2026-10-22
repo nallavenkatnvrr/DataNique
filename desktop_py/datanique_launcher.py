@@ -580,10 +580,37 @@ def _browser_mode(port: int, reason: str = "") -> None:
             pass
 
 
+def hard_exit(code: int) -> None:
+    """End the process without any teardown.
+
+    On Windows even os._exit() goes through ExitProcess, which runs the
+    shutdown routine of every loaded DLL. The .NET runtime behind the window
+    (pythonnet) can deadlock there, leaving an invisible Datanique.exe that
+    holds the data folder lock. TerminateProcess skips those routines; by now
+    the backend has stopped, the database is closed and the lock released."""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.flush()
+        except Exception:
+            pass
+    if os.name == "nt":
+        try:
+            import ctypes
+            from ctypes import wintypes
+
+            k32 = ctypes.WinDLL("kernel32", use_last_error=True)
+            k32.GetCurrentProcess.restype = wintypes.HANDLE
+            k32.TerminateProcess.argtypes = (wintypes.HANDLE, wintypes.UINT)
+            k32.TerminateProcess(k32.GetCurrentProcess(), code & 0xFFFFFFFF)
+        except Exception:
+            pass
+    os._exit(code)
+
+
 def run() -> None:
-    """Entry point. Ends with os._exit: by then the backend has shut down and
-    the lock is released, and skipping interpreter teardown avoids native
-    library threads (DuckDB, drivers) aborting the process on the way out."""
+    """Entry point. Ends with hard_exit: by then the backend has shut down and
+    the lock is released, and skipping interpreter and DLL teardown avoids
+    native libraries (DuckDB, drivers, .NET) hanging or aborting on the way out."""
     try:
         code = main()
     except SystemExit as exc:
@@ -593,12 +620,8 @@ def run() -> None:
 
         traceback.print_exc()
         code = 1
-    for stream in (sys.stdout, sys.stderr):
-        try:
-            stream.flush()
-        except Exception:
-            pass
-    os._exit(code)
+    print(f"[datanique] exit {code}")
+    hard_exit(code)
 
 
 if __name__ == "__main__":

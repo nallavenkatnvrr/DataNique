@@ -49,6 +49,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command "$p = Start-Process -File
 set "RC=%ERRORLEVEL%"
 if not "%RC%"=="0" (
     echo.
+    if "%RC%"=="99" echo The exe did not close within 5 minutes.
     echo Self-test failed with code %RC%. Its log:
     type "%TESTDIR%\logs\datanique.log" 2>nul
     type "%TESTDIR%\self-test.json" 2>nul
