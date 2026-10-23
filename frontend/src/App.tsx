@@ -3,9 +3,10 @@ import { Navigate, Route, Routes, useLocation, useParams } from "react-router-do
 import { AppShell } from "@/components/shell/AppShell";
 import { Spinner } from "@/components/kit";
 import { HomePage } from "@/pages/Home";
+import { importWithReload } from "@/lib/chunkReload";
 
 const lazyPage = <K extends string>(loader: () => Promise<Record<K, React.ComponentType>>, name: K) =>
-  React.lazy(() => loader().then((m) => ({ default: m[name] })));
+  React.lazy(() => importWithReload(loader).then((m) => ({ default: m[name] })));
 
 const ComparePage = lazyPage(() => import("@/pages/Compare"), "ComparePage");
 const BulkPage = lazyPage(() => import("@/pages/Bulk"), "BulkPage");
@@ -15,7 +16,7 @@ const HistoryPage = lazyPage(() => import("@/pages/History"), "HistoryPage");
 const BatchPage = lazyPage(() => import("@/pages/Batch"), "BatchPage");
 const TemplatesPage = lazyPage(() => import("@/pages/Templates"), "TemplatesPage");
 const ConnectionsPage = lazyPage(() => import("@/pages/Connections"), "ConnectionsPage");
-const SqlIdePage = React.lazy(() => import("@/pages/SqlIde").then((m) => ({ default: m.SqlIdePage })));
+const SqlIdePage = React.lazy(() => importWithReload(() => import("@/pages/SqlIde")).then((m) => ({ default: m.SqlIdePage })));
 const DiffMergePage = lazyPage(() => import("@/pages/DiffMerge"), "DiffMergePage");
 const SettingsPage = lazyPage(() => import("@/pages/Settings"), "SettingsPage");
 

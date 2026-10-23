@@ -100,6 +100,30 @@ def test_one_instance_per_data_folder(L, tmp_path):
     other.release()
 
 
+def test_web_cache_cleared_only_when_the_ui_changes(L, tmp_path):
+    ui = tmp_path / "dist"
+    ui.mkdir()
+    (ui / "index.html").write_text("<script src='./assets/index-AAA.js'></script>")
+    storage = tmp_path / "webview"
+    cache = storage / "EBWebView" / "Default" / "Cache"
+    keep = storage / "EBWebView" / "Default" / "Local Storage"
+    for d in (cache, keep):
+        d.mkdir(parents=True)
+        (d / "f").write_text("x")
+
+    assert L.clear_stale_web_cache(tmp_path, storage, ui) is True     # first start of this build
+    assert not cache.exists() and (keep / "f").exists()               # storage kept
+    cache.mkdir(parents=True)
+    (cache / "f").write_text("x")
+    assert L.clear_stale_web_cache(tmp_path, storage, ui) is False    # same build: untouched
+    assert (cache / "f").exists()
+    (ui / "index.html").write_text("<script src='./assets/index-BBB.js'></script>")
+    assert L.clear_stale_web_cache(tmp_path, storage, ui) is True     # updated build
+    assert not cache.exists()
+    port_kept = json.loads((tmp_path / "desktop.json").read_text())
+    assert "ui_build" in port_kept
+
+
 def test_window_opens_first_then_switches_to_the_app(L, tmp_path, monkeypatch):
     """The window is created with the start screen before the backend is up,
     and moves to the app URL once /api/health answers."""

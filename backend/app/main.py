@@ -397,6 +397,13 @@ def _mount_spa(target=None, static_dir: str | None = None) -> None:
         correctly."""
         accept = request.headers.get("accept-encoding", "")
         media = mimetypes.guess_type(str(path))[0] or "application/octet-stream"
+        # Files under assets/ have a content hash in their name and never
+        # change: cache them for good. Everything else (index.html above all)
+        # must be checked every time, or after an update the window keeps an
+        # old index.html that asks for files the new build no longer has.
+        hashed = path.parent.name == "assets" and path != index
+        cache = "public, max-age=31536000, immutable" if hashed else "no-cache"
+        base = {"Vary": "Accept-Encoding", "Cache-Control": cache}
         try:
             src_ns = path.stat().st_mtime_ns
         except OSError:
@@ -404,12 +411,12 @@ def _mount_spa(target=None, static_dir: str | None = None) -> None:
         if _have_brotli and "br" in accept:
             br = path.with_name(path.name + ".br")
             if _fresh(br, src_ns):
-                return FileResponse(br, media_type=media, headers={"Content-Encoding": "br", "Vary": "Accept-Encoding"})
+                return FileResponse(br, media_type=media, headers={**base, "Content-Encoding": "br"})
         if "gzip" in accept:
             gz = path.with_name(path.name + ".gz")
             if _fresh(gz, src_ns):
-                return FileResponse(gz, media_type=media, headers={"Content-Encoding": "gzip", "Vary": "Accept-Encoding"})
-        return FileResponse(path, media_type=media, headers={"Vary": "Accept-Encoding"})
+                return FileResponse(gz, media_type=media, headers={**base, "Content-Encoding": "gzip"})
+        return FileResponse(path, media_type=media, headers=base)
 
     @target.get("/", include_in_schema=False)
     def _spa_root(request: Request):
@@ -437,6 +444,10 @@ def _mount_spa(target=None, static_dir: str | None = None) -> None:
                 alt = dist / parts[-1]
             if _within(alt) and alt.is_file() and alt.suffix:
                 return _negotiate(alt, request)
+        # A missing build file is a real 404, not the app page: a script
+        # request answered with index.html fails with a confusing MIME error.
+        if "assets" in parts or full_path.rsplit("/", 1)[-1].endswith((".js", ".css", ".map", ".woff2")):
+            return JSONResponse({"detail": "Not found"}, status_code=404, headers={"Cache-Control": "no-store"})
         return _negotiate(index, request)
 
 

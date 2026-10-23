@@ -540,7 +540,47 @@ def _show_window(port: int, folder: Path, backend: threading.Thread) -> None:
     # (open SQL IDE tabs, history, theme) between launches.
     storage = folder / "webview"
     storage.mkdir(parents=True, exist_ok=True)
+    clear_stale_web_cache(folder, storage, _project_paths()[1])
     webview.start(switch_to_app, gui=None, private_mode=False, storage_path=str(storage))
+
+
+def clear_stale_web_cache(folder: Path, storage: Path, frontend_dist: Path) -> bool:
+    """After an update, empty the window's HTTP cache (not its storage).
+
+    The window keeps a disk cache of the UI. A cached index.html from the
+    previous version asks for script files the new build no longer has
+    ("Failed to fetch dynamically imported module"). The UI build is
+    identified by a hash of index.html; when it differs from the last start,
+    the cache folders are removed. Browser storage (SQL IDE tabs, history,
+    theme) lives elsewhere in the profile and is kept."""
+    import hashlib
+    import shutil
+
+    try:
+        build = hashlib.sha256((frontend_dist / "index.html").read_bytes()).hexdigest()[:16]
+    except OSError:
+        return False
+    state_file = folder / "desktop.json"
+    try:
+        state = json.loads(state_file.read_text("utf-8")) if state_file.exists() else {}
+    except (OSError, ValueError):
+        state = {}
+    if state.get("ui_build") == build:
+        return False
+    cleared = False
+    for profile in storage.glob("EBWebView/*"):
+        for name in ("Cache", "Code Cache", "Service Worker"):
+            d = profile / name
+            if d.is_dir():
+                shutil.rmtree(d, ignore_errors=True)
+                cleared = True
+    state["ui_build"] = build
+    try:
+        state_file.write_text(json.dumps(state), "utf-8")
+    except OSError:
+        pass
+    print(f"[datanique] new UI build {build}; window cache {'cleared' if cleared else 'empty'}", flush=True)
+    return cleared
 
 
 def _prefers_dark() -> bool:

@@ -9,8 +9,10 @@ import { VaultGate } from "@/components/vault/VaultGate";
 import App from "./App";
 import "./index.css";
 import { applyEffects } from "@/lib/effects";
+import { installChunkReload } from "@/lib/chunkReload";
 
 applyEffects();
+installChunkReload();
 
 const queryClient = new QueryClient({
   defaultOptions: {

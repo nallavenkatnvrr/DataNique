@@ -59,6 +59,14 @@ Date: 22 Oct 2026.
     are computed once for the diff and the column statistics instead of
     twice.
 - Fixed: reloading (F5) on a run, job or batch page showed a blank page.
+- Fixed: "Something went wrong - Failed to fetch dynamically imported
+  module" after an update (seen on Text diff and other pages). The window
+  kept the previous version's start page in its cache and asked for page
+  files the new build no longer has. Now the start page is never served from
+  cache, the window's cache is emptied when Datanique.exe starts with a new
+  build (SQL IDE tabs and settings are kept), a missing page file is a clean
+  404, and if one still goes missing the app reloads itself once instead of
+  showing the error.
 - Build it on your own PC with `desktop_py\build-exe.bat`: installs the
   packages, freezes the app, runs `Datanique.exe --self-test` (at most 5
   minutes, its log is printed if it fails) and zips it.

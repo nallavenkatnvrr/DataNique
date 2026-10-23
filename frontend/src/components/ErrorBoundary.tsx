@@ -1,6 +1,7 @@
 import * as React from "react";
 import { AlertTriangle, RefreshCw, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { isChunkLoadError, reloadForNewVersion } from "@/lib/chunkReload";
 
 interface ErrorBoundaryState {
   error: Error | null;
@@ -25,6 +26,8 @@ export class ErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    // A page file from an older version: load the current version instead.
+    if (isChunkLoadError(error) && reloadForNewVersion()) return;
     this.setState({ error, errorInfo });
     // Could also report to a logging service here
     console.error("React error boundary caught:", error, errorInfo);
@@ -50,7 +53,9 @@ export class ErrorBoundary extends React.Component<
               <div className="flex-1 min-w-0">
                 <h1 className="text-2xl font-bold mb-1">Something went wrong</h1>
                 <p className="text-sm text-muted-foreground mb-4">
-                  An unexpected error occurred in the UI. Your data is safe - only the rendering failed.
+                  {isChunkLoadError(this.state.error)
+                    ? "Part of Datanique could not be loaded, usually because it was just updated. Reload page loads the current version."
+                    : "An unexpected error occurred in the UI. Your data is safe - only the rendering failed."}
                 </p>
                 <details className="mb-4">
                   <summary className="text-sm font-medium cursor-pointer hover:underline">
